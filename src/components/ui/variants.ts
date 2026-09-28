@@ -7,7 +7,7 @@ export const BUTTON_VARIANTS = cva('inline-flex items-center justify-center gap-
 			tonal: 'border border-cyan-800 bg-cyan-300 text-cyan-950',
 			secondary: 'border border-yellow-700 bg-yellow-300 text-yellow-950',
 			destructive: 'border border-rose-700 bg-rose-600 text-white',
-			outline: 'border border-gray-300 bg-transparent text-gray-900 hover:bg-rose-900',
+			outline: 'border border-gray-300 bg-rose-50/40 text-gray-900 hover:bg-rose-900',
 			ghost: 'hover:bg-gray-100',
 			inline: 'underline-offset-4 hover:underline',
 		},
