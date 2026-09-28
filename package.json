@@ -9,7 +9,9 @@
 		"dev": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
-		"check": "astro check"
+		"check": "astro check",
+		"test": "node --test test/*.test.mjs",
+		"test:full": "astro check && node --test test/*.test.mjs && astro build"
 	},
 	"dependencies": {
 		"@astrojs/react": "^6.0.4",

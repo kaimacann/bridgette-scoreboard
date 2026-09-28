@@ -1,1 +1,1 @@
-export const IMG_DARKEN = 'brightness-90 contrast-110';
+export const IMG_DARKEN = 'transform-gpu mix-blend-color-burn grayscale';

@@ -18,42 +18,53 @@ const payloadSchema = z.object({
 	})).max(100),
 });
 
-/** Responds with the current scoreboard or saves an editor-authenticated update. */
-export default async (request) => {
-	if (request.method === 'GET') {
-		try {
-			const data = await loadScoreboard();
-			if (!data) return json({ error: 'Scoreboard migration is not configured.' }, 503);
-			return json(data);
-		} catch (error) {
-			console.error('scoreboard.read.failed', error);
-			return json({ error: 'The scoreboard could not be loaded.' }, 500);
+/** Creates the HTTP handler with injectable storage for isolated integration tests. */
+export function createBridgetteHandler({ getStore: store = getStore, env = process.env, logger = console } = {}) {
+	return async request => {
+		if (request.method === 'GET') {
+			try {
+				const data = await loadScoreboard(store, env);
+				if (!data) return json({ error: 'Scoreboard migration is not configured.' }, 503);
+				return json(data);
+			} catch (error) {
+				logger.error('scoreboard.read.failed', error);
+				return json({ error: 'The scoreboard could not be loaded.' }, 500);
+			}
 		}
-	}
-	if (request.method !== 'PUT') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET, PUT' });
+		if (request.method !== 'PUT') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET, PUT' });
 
-	const editorToken = process.env.BRIDGETTE_EDITOR_TOKEN;
-	const submittedToken = request.headers.get('authorization')?.replace(/^Bearer\s+/iu, '') ?? '';
-	if (!editorToken || !secureMatch(submittedToken, editorToken)) return json({ error: 'A valid editor key is required.' }, 401);
+		const editorToken = env.BRIDGETTE_EDITOR_TOKEN;
+		const submittedToken = request.headers.get('authorization')?.replace(/^Bearer\s+/iu, '') ?? '';
+		if (!editorToken || !secureMatch(submittedToken, editorToken)) return json({ error: 'A valid editor key is required.' }, 401);
 
-	try {
-		const parsed = payloadSchema.safeParse(await request.json());
+		let body;
+		try {
+			body = await request.json();
+		} catch {
+			return json({ error: 'The scoreboard update is invalid.' }, 400);
+		}
+		const parsed = payloadSchema.safeParse(body);
 		if (!parsed.success) return json({ error: 'The scoreboard update is invalid.' }, 400);
-		await getStore(STORE_NAME).setJSON(DATA_KEY, parsed.data);
-		return json({ data: parsed.data });
-	} catch (error) {
-		console.error('scoreboard.update.failed', error);
-		return json({ error: 'The scoreboard could not be saved.' }, 500);
-	}
-};
+		try {
+			await store(STORE_NAME).setJSON(DATA_KEY, parsed.data);
+			return json({ data: parsed.data });
+		} catch (error) {
+			logger.error('scoreboard.update.failed', error);
+			return json({ error: 'The scoreboard could not be saved.' }, 500);
+		}
+	};
+}
 
-async function loadScoreboard() {
+/** Responds with the current scoreboard or saves an editor-authenticated update. */
+export default createBridgetteHandler();
+
+async function loadScoreboard(getStore, env) {
 	const destination = getStore(STORE_NAME);
 	const existing = await destination.get(DATA_KEY, { type: 'json' });
 	if (payloadSchema.safeParse(existing).success) return existing;
 
-	const sourceSiteId = process.env.BRIDGETTE_MIGRATION_SITE_ID;
-	const sourceToken = process.env.BRIDGETTE_MIGRATION_BLOBS_TOKEN;
+	const sourceSiteId = env.BRIDGETTE_MIGRATION_SITE_ID;
+	const sourceToken = env.BRIDGETTE_MIGRATION_BLOBS_TOKEN;
 	if (sourceSiteId && sourceToken) {
 		const source = getStore({ name: STORE_NAME, siteID: sourceSiteId, token: sourceToken });
 		const previous = await source.get(DATA_KEY, { type: 'json' });

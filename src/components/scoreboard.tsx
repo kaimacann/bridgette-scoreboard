@@ -208,7 +208,7 @@ function ScoreboardContent(): React.JSX.Element {
 	return (
 		<div className='grid size-full grid-rows-[auto_3.5rem_1fr]'>
 			{/* HEADER */}
-			<section className='flex flex-col gap-4 bg-rose-950 p-6 py-20 text-rose-50 shadow md:flex-row md:items-end md:justify-between'>
+			<section className='flex flex-col gap-4 bg-secondary-12 p-6 py-20 text-secondary-1 shadow md:flex-row md:items-end md:justify-between'>
 				{/* logo */}
 				<div>
 					<h1 className='text-7xl outline-rose-50' style={{ fontFamily: '"Playball", cursive' }}>
@@ -241,18 +241,18 @@ function ScoreboardContent(): React.JSX.Element {
 						}}
 						value={selId ?? undefined}
 					>
-						<SelectTrigger className='w-full border-rose-200 bg-rose-900 font-mono text-rose-50 data-[placeholder]:text-rose-200' aria-label='Select pitcher'>
+						<SelectTrigger className='w-full border-secondary-5 bg-secondary-11 font-mono text-secondary-1 data-[placeholder]:text-secondary-2' aria-label='Select pitcher'>
 							<SelectValue placeholder='Select pitcher' />
 						</SelectTrigger>
 						{/* prettier-ignore */}
-						<SelectContent className='border-rose-200 bg-rose-50 text-rose-950'>
+						<SelectContent className='border-secondary-5 bg-primary-1 text-primary-12'>
 							{pitchers.map(p => (<SelectItem key={p.id} value={p.id}>{p.name} · 0{clamp(p.strikes)}{' '}</SelectItem>))}
 							<SelectSeparator />
 							<SelectItem value={ACTION_ADD}>Add pitcher...</SelectItem>
 							<SelectItem disabled={!selPitcher} value={ACTION_DELETE}>{selPitcher ? `Delete ${selPitcher.name}` : 'Delete pitcher'}</SelectItem>
 						</SelectContent>
 					</Select>
-					<p className='mt-2 text-xs text-rose-100/70'>Saving changes requires the site editor key.</p>
+					<p className='mt-2 text-xs text-secondary-2/80'>Saving changes requires the site editor key.</p>
 					{err && (
 						<Alert variant='destructive' className='mb-0 mt-3'>
 							<AlertTitle>Dashboard unavailable</AlertTitle>
@@ -266,7 +266,7 @@ function ScoreboardContent(): React.JSX.Element {
 					<Button
 						variant='outline'
 						size='xl'
-						className='size-14 border-rose-200 text-rose-50 hover:bg-rose-900'
+						className='size-14 border-secondary-4 bg-secondary-1 text-secondary-12 hover:bg-secondary-2'
 						aria-label='Decrease strike count'
 						disabled={!selPitcher || strikes === 1}
 						onClick={(): void => {
@@ -278,11 +278,11 @@ function ScoreboardContent(): React.JSX.Element {
 					>
 						<CarbonIcon name='subtract' className='text-3xl' />
 					</Button>
-					<p className='flex size-14 items-center justify-center rounded border border-rose-200 bg-slate-900 font-mono text-2xl'>0{strikes}</p>
+					<p className='flex size-14 items-center justify-center rounded border border-secondary-4 bg-primary-12 font-mono text-2xl text-primary-1'>0{strikes}</p>
 					<Button
 						variant='outline'
 						size='xl'
-						className='size-14 border-rose-200 text-rose-50 hover:bg-rose-900'
+						className='size-14 border-secondary-4 bg-secondary-1 text-secondary-12 hover:bg-secondary-2'
 						aria-label='Increase strike count'
 						disabled={!selPitcher || strikes === 3}
 						onClick={(): void => {
@@ -299,14 +299,14 @@ function ScoreboardContent(): React.JSX.Element {
 
 			{/* MARQUEE */}
 			<div
-				className={cn('flex items-center overflow-hidden border-double border-rose-400 bg-rose-50 transition-opacity duration-75', strikes === 3 ? 'h-full border-y-[6px]' : 'h-0 border-t-[6px]')}
+				className={cn('flex items-center overflow-hidden border-double border-secondary-8 bg-primary-1 transition-opacity duration-75', strikes === 3 ? 'h-full border-y-[6px]' : 'h-0 border-t-[6px]')}
 				aria-hidden={strikes !== 3}
 			>
-				<Marquee terms={["YOU'RE OUT"]} pauseOnClick={false} duration={20000} reverse rows={1} className='!mb-0 font-thin leading-none text-rose-950' />
+				<Marquee terms={["YOU'RE OUT"]} pauseOnClick={false} duration={20000} reverse rows={1} className='!mb-0 font-thin leading-none text-secondary-12' />
 			</div>
 
 			{/* IMAGES */}
-			<section className='row-start-3 mt-3 grid h-40 min-h-0 grid-cols-[auto_1fr_1fr_auto] items-stretch pr-6'>
+			<section className='row-start-3 mt-3 grid h-40 min-h-0 grid-cols-[auto_1fr_1fr_auto] items-stretch bg-primary-1 pr-6'>
 				<div className={cn('row-start-1 flex h-full items-end justify-end', COL_CLASSES[strikes])}>
 					<img
 						src={strikes === 3 && flash ? '/images/bridgette/baseball-2.png' : '/images/bridgette/baseball-1.png'}

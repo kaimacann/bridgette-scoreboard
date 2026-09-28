@@ -4,6 +4,44 @@
 @tailwind utilities;
 
 @layer base {
+	/* Standalone Radix-style scales: warm cream primary and burgundy secondary. */
+	:root {
+		color-scheme: light;
+		--primary-1: 255 250 240;
+		--primary-2: 251 245 233;
+		--primary-3: 244 236 220;
+		--primary-4: 236 226 206;
+		--primary-5: 228 216 192;
+		--primary-6: 218 203 176;
+		--primary-7: 203 185 154;
+		--primary-8: 181 161 127;
+		--primary-9: 141 123 94;
+		--primary-10: 127 109 81;
+		--primary-11: 101 86 63;
+		--primary-12: 41 35 25;
+		--secondary-1: 255 252 253;
+		--secondary-2: 255 247 248;
+		--secondary-3: 254 234 237;
+		--secondary-4: 255 220 225;
+		--secondary-5: 255 206 214;
+		--secondary-6: 248 191 200;
+		--secondary-7: 239 172 184;
+		--secondary-8: 229 146 163;
+		--secondary-9: 229 70 102;
+		--secondary-10: 220 59 93;
+		--secondary-11: 202 36 77;
+		--secondary-12: 100 23 43;
+		--radius: 0.5rem;
+	}
+
+	@font-face {
+		font-family: 'Playball';
+		src: url('/fonts/Playball-Regular.ttf') format('truetype');
+		font-style: normal;
+		font-weight: 400;
+		font-display: swap;
+	}
+
 	/* AVARAs; serif */
 	@font-face {
 		font-family: 'Avara';
