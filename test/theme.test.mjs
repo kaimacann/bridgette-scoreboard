@@ -58,6 +58,7 @@ test('Playball is loaded locally and used by the scoreboard title', async () => 
 
 test('Bridgette illustrations use color-burn blending over the cream canvas', () => {
 	assert.match(imageTheme, /mix-blend-color-burn/);
+	assert.doesNotMatch(imageTheme, /grayscale/);
 	assert.match(scoreboard, /bg-primary-1 pr-6/);
 	assert.match(scoreboard, /alt='Illustration of Bridgette batting'/);
 	assert.match(scoreboard, /alt='Illustration of the pitcher'/);

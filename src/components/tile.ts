@@ -1,1 +1,1 @@
-export const IMG_DARKEN = 'transform-gpu mix-blend-color-burn grayscale';
+export const IMG_DARKEN = 'transform-gpu mix-blend-color-burn';
