@@ -4,6 +4,12 @@ import { z } from 'zod';
 
 const STORE_NAME = 'bridgette-dashboard';
 const DATA_KEY = 'scoreboard';
+const DEFAULT_SCOREBOARD = {
+	pitchers: [
+		{ id: 'kai', name: 'Kai', strikes: 1 },
+		{ id: 'daniel', name: 'Daniel', strikes: 1 },
+	],
+};
 const payloadSchema = z.object({
 	pitchers: z.array(z.object({
 		id: z.string().min(1).max(80),
@@ -57,7 +63,8 @@ async function loadScoreboard() {
 			return parsed.data;
 		}
 	}
-	return null;
+	await destination.setJSON(DATA_KEY, DEFAULT_SCOREBOARD);
+	return DEFAULT_SCOREBOARD;
 }
 
 function secureMatch(candidate, expected) {

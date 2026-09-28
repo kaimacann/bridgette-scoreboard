@@ -21,7 +21,7 @@ import Marquee from '@components/Marquee';
 import { Alert, AlertDescription, AlertError, AlertTitle } from '@ui/alert';
 import { Button } from '@ui/button';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@ui/select';
-import { Plus as AddIcon, Minus as SubtractIcon } from 'lucide-react';
+import { CarbonIcon } from './carbon-icons';
 
 // DATA
 
@@ -267,6 +267,7 @@ function ScoreboardContent(): React.JSX.Element {
 						variant='outline'
 						size='xl'
 						className='size-14 border-rose-200 text-rose-50 hover:bg-rose-900'
+						aria-label='Decrease strike count'
 						disabled={!selPitcher || strikes === 1}
 						onClick={(): void => {
 							if (!selPitcher) return;
@@ -275,13 +276,14 @@ function ScoreboardContent(): React.JSX.Element {
 							void persist(n);
 						}}
 					>
-						<SubtractIcon className='text-3xl' />
+						<CarbonIcon name='subtract' className='text-3xl' />
 					</Button>
 					<p className='flex size-14 items-center justify-center rounded border border-rose-200 bg-slate-900 font-mono text-2xl'>0{strikes}</p>
 					<Button
 						variant='outline'
 						size='xl'
 						className='size-14 border-rose-200 text-rose-50 hover:bg-rose-900'
+						aria-label='Increase strike count'
 						disabled={!selPitcher || strikes === 3}
 						onClick={(): void => {
 							if (!selPitcher) return;
@@ -290,7 +292,7 @@ function ScoreboardContent(): React.JSX.Element {
 							void persist(n);
 						}}
 					>
-						<AddIcon className='text-3xl' />
+						<CarbonIcon name='add' className='text-3xl' />
 					</Button>
 				</div>
 			</section>
@@ -308,11 +310,12 @@ function ScoreboardContent(): React.JSX.Element {
 				<div className={cn('row-start-1 flex h-full items-end justify-end', COL_CLASSES[strikes])}>
 					<img
 						src={strikes === 3 && flash ? '/images/bridgette/baseball-2.png' : '/images/bridgette/baseball-1.png'}
+						alt='Illustration of Bridgette batting'
 						className={cn('h-96 w-auto max-w-full object-contain transition-all duration-300', IMG_DARKEN)}
 					/>
 				</div>
 				<div className='col-start-4 flex h-full items-end justify-start'>
-					<img src='/images/bridgette/pitcher-2.png' className={cn('h-96 w-auto max-w-full object-contain', IMG_DARKEN)} />
+					<img src='/images/bridgette/pitcher-2.png' alt='Illustration of the pitcher' className={cn('h-96 w-auto max-w-full object-contain', IMG_DARKEN)} />
 				</div>
 			</section>
 		</div>

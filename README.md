@@ -45,4 +45,4 @@ Provision these variables to the project's **Production Functions** environment 
 | `BRIDGETTE_MIGRATION_SITE_ID` | Site ID of the current Netlify site that holds the existing scoreboard. This is already configured on the new Netlify project. |
 | `BRIDGETTE_MIGRATION_BLOBS_TOKEN` | Temporary secret with read access to the source site's Blobs store. The first successful read copies the existing scoreboard into this site's store. Remove this variable after verifying the copy. |
 
-Until migration access is configured, the API returns `503` rather than creating a default board. This protects the existing scoreboard from being overwritten before its data is copied.
+On the first read, the API copies the source board when migration access is configured. If the source board is empty or migration access is unavailable, it initializes the same Kai and Daniel defaults used by the original Terra dashboard. Saving shared changes still requires `BRIDGETTE_EDITOR_TOKEN`.
