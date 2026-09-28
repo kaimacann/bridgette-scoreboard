@@ -1,0 +1,133 @@
+@import 'effects.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	/* AVARAs; serif */
+	@font-face {
+		font-family: 'Avara';
+		src:
+			url('/fonts/Avara-Bold.woff2') format('woff2'),
+			url('/fonts/Avara-Bold.woff') format('woff');
+		font-weight: 500;
+		font-style: normal;
+		ascent-override: 105%;
+	}
+	@font-face {
+		font-family: 'Avara';
+		src:
+			url('/fonts/Avara-BoldItalic.woff2') format('woff2'),
+			url('/fonts/Avara-BoldItalic.woff') format('woff');
+		font-weight: 500;
+		font-style: italic;
+		ascent-override: 105%;
+	}
+
+	/* AUTHENTIC SANSes; sans */
+	@font-face {
+		font-family: 'Authentic Sans';
+		src:
+			url('/fonts/AUTHENTICSans-90.woff2') format('woff2'),
+			url('/fonts/AUTHENTICSans-90.woff') format('woff');
+		font-weight: 400;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Authentic Sans';
+		src:
+			url('/fonts/AUTHENTICSans-130.woff2') format('woff2'),
+			url('/fonts/AUTHENTICSans-130.woff') format('woff');
+		font-weight: bold;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Authentic Sans';
+		src:
+			url('/fonts/AUTHENTICSans-150.woff2') format('woff2'),
+			url('/fonts/AUTHENTICSans-150.woff') format('woff');
+		font-weight: 800;
+		font-style: normal;
+	}
+
+	small {
+		@apply text-xs;
+	}
+
+	::selection {
+		@apply bg-primary-6/40;
+	}
+	:root {
+		--radius: 0.5rem;
+	}
+}
+
+@layer components {
+	.h1 {
+		@apply mb-6 text-balance font-serif text-5xl italic;
+	}
+	.h2 {
+		@apply mb-4 text-pretty text-2xl font-semibold;
+	}
+	.h3 {
+		@apply text-pretty text-lg font-semibold;
+	}
+
+	/* Compensate for icon baseline. */
+	svg[style*='--icon-baseline'] {
+		vertical-align: var(--icon-baseline);
+		display: inline-block;
+	}
+
+	*,
+	::after,
+	::before {
+		@apply border-gray-6 ring-inherit ring-offset-inherit;
+		@apply decoration-2 underline-offset-4;
+	}
+
+	/* Focusable els */
+	[href],
+	input,
+	select,
+	textarea,
+	button,
+	summary,
+	iframe,
+	audio[controls],
+	video[controls],
+	[contenteditable],
+	[tabindex] {
+		&:focus-visible {
+			@apply box-decoration-clone outline-none ring-2;
+		}
+	}
+
+	/* Used for marquee */
+	@keyframes slide {
+		from {
+			transform: translateX(0);
+		}
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes docs-toolbar-sweep {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(100%);
+		}
+	}
+}

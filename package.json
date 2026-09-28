@@ -1,0 +1,50 @@
+{
+	"name": "bridgette-scoreboard",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@10.30.3",
+	"engines": { "node": ">=22.19.0" },
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"check": "astro check"
+	},
+	"dependencies": {
+		"@astrojs/react": "^6.0.4",
+		"@netlify/blobs": "^10.7.12",
+		"@radix-ui/react-dialog": "^1.1.15",
+		"@radix-ui/react-select": "^2.2.6",
+		"@radix-ui/react-slot": "^1.2.4",
+		"@radix-ui/react-tabs": "^1.1.12",
+		"@vidstack/react": "^0.4.5",
+		"@xyflow/react": "^12.3.6",
+		"@dagrejs/dagre": "^1.1.4",
+		"astro": "^7.2.8",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.555.0",
+		"react": "19.2.7",
+		"react-dom": "19.2.7",
+		"react-simple-maps": "^3.0.0",
+		"tailwind-merge": "^2.6.0",
+		"topojson-client": "^3.1.0",
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.4",
+		"@headlessui/tailwindcss": "^0.2.2",
+		"@tailwindcss/typography": "^0.5.20",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.18",
+		"@types/topojson-client": "^3.1.5",
+		"autoprefixer": "^10.5.4",
+		"postcss": "^8.5.26",
+		"tailwindcss": "^3.4.19",
+		"tailwindcss-animate": "^1.0.7",
+		"tailwindcss-scrim-gradients": "^0.4.2",
+		"typescript": "^5.9.3",
+		"vidstack": "^0.4.5"
+	}
+}

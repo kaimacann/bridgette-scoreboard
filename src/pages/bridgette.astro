@@ -1,0 +1,10 @@
+---
+import Scoreboard from '../components/scoreboard';
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+
+<SiteLayout title="Bridgette's Strikes" description="A shared community baseball scoreboard.">
+	<main class="min-h-[calc(100vh-4rem)] bg-rose-950">
+		<Scoreboard client:load />
+	</main>
+</SiteLayout>
