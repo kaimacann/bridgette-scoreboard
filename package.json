@@ -11,7 +11,8 @@
 		"preview": "astro preview",
 		"check": "astro check",
 		"test": "node --test test/*.test.mjs",
-		"test:full": "astro check && node --test test/*.test.mjs && astro build"
+		"test:full": "astro check && node --test test/*.test.mjs && astro build",
+		"quality:all": "terra-quality quality --all --warn"
 	},
 	"dependencies": {
 		"@astrojs/react": "^6.0.4",
@@ -38,6 +39,7 @@
 		"@astrojs/check": "^0.9.4",
 		"@headlessui/tailwindcss": "^0.2.2",
 		"@tailwindcss/typography": "^0.5.20",
+		"@terra-symposium/quality": "0.4.34",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.18",
 		"@types/topojson-client": "^3.1.5",

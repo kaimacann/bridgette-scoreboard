@@ -78,6 +78,9 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.20
         version: 0.5.20(tailwindcss@3.4.19(yaml@2.9.1))
+      '@terra-symposium/quality':
+        specifier: 0.4.34
+        version: 0.4.34
       '@types/react':
         specifier: ^19.2.18
         version: 19.3.0
@@ -1331,6 +1334,11 @@ packages:
     resolution: {integrity: sha512-hwbzQuNUfcPvbegQFatVPl/MY/tcM9KLl963hQ5laJKPh81TEZ1+dNG9PirGvcaDBkp+BCshExAyKVPW91dozw==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || >=4.0.0 || insiders'
+
+  '@terra-symposium/quality@0.4.34':
+    resolution: {integrity: sha512-0p4hn9zRrQ9SoNUQ121hVowyw/M8JOBb4PCN3fgIfj5MKrUzNtN37Ry1tXUw8dq6NUCloF0X6bRBr1yUEvv5vA==}
+    engines: {node: '>=18.18'}
+    hasBin: true
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
@@ -4150,6 +4158,10 @@ snapshots:
     dependencies:
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.4.19(yaml@2.9.1)
+
+  '@terra-symposium/quality@0.4.34':
+    dependencies:
+      typescript: 5.9.3
 
   '@tybys/wasm-util@0.10.4':
     dependencies:
