@@ -4,8 +4,10 @@ import { notifyError } from '../lib/error-notifications';
 import { getNeonSession, neonAuth, neonIsConfigured } from '../lib/neon';
 import Scoreboard from './scoreboard';
 
+/** The authenticated account details required by the scoreboard gate. */
 type Session = { user: { id: string; name?: string; email: string } };
 
+/** Shows sign-in or account creation before exposing the user's scoreboards. */
 export default function AccountGate(): React.JSX.Element {
 	const [session, setSession] = useState<Session | null>(null);
 	const [checking, setChecking] = useState(true);
@@ -32,6 +34,7 @@ export default function AccountGate(): React.JSX.Element {
 		return () => { mounted = false; };
 	}, []);
 
+	/** Sends account credentials to Neon Auth and loads the resulting session. */
 	async function submit(event: SubmitEvent<HTMLFormElement>): Promise<void> {
 		event.preventDefault();
 		setBusy(true);
@@ -47,6 +50,7 @@ export default function AccountGate(): React.JSX.Element {
 		}
 	}
 
+	/** Ends the current Neon Auth session and returns to the sign-in form. */
 	async function signOut(): Promise<void> {
 		try {
 			await neonAuth('sign-out', {});

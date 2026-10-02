@@ -10,18 +10,21 @@ const [css, layout, scoreboard, imageTheme, accountGate, marquee] = await Promis
 	readFile(new URL('../src/components/account-gate.tsx', import.meta.url), 'utf8'),
 	readFile(new URL('../src/components/Marquee.tsx', import.meta.url), 'utf8'),
 ]);
+/** Reads one RGB theme token from the shared stylesheet. */
 function token(name) {
 	const match = css.match(new RegExp(`--${name}:\\s*(\\d{1,3} \\d{1,3} \\d{1,3})`, 'i'));
 	assert.ok(match, `Expected CSS theme token --${name}`);
 	return match[1].split(' ').map(Number);
 }
 
+/** Converts an RGB color to relative luminance for contrast checks. */
 function luminance(rgb) {
 	const channels = rgb.map(channel => channel / 255);
 	const linear = channels.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
 	return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
 }
 
+/** Calculates the WCAG contrast ratio between two RGB colors. */
 function contrast(a, b) {
 	const values = [luminance(a), luminance(b)].sort((left, right) => right - left);
 	return (values[0] + 0.05) / (values[1] + 0.05);

@@ -1,3 +1,4 @@
+/** Public Vite variables available to Bridgette's browser application. */
 interface ImportMetaEnv {
 	readonly PUBLIC_NEON_AUTH_URL?: string;
 	readonly PUBLIC_NEON_DATA_API_URL?: string;
@@ -5,6 +6,7 @@ interface ImportMetaEnv {
 
 declare module 'react-simple-maps' {
 	import type React from 'react';
+	/** Geography feature shape consumed by the react-simple-maps components. */
 	export type MapGeography = {
 		rsmKey: string;
 		geometry?: { type?: string };

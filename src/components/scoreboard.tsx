@@ -42,6 +42,7 @@ const DEFAULT_PITCHERS: PitcherData[] = [
 	{ id: 'kai', name: 'Kai', strikes: 1 },
 	{ id: 'daniel', name: 'Daniel', strikes: 1 },
 ];
+/** Neon Data API projection for an account-owned or shared scoreboard. */
 type DashboardRecord = { id: string; owner_id: string; title: string; pitchers: PitcherData[] };
 
 /*//////////////////////////////////////////////////

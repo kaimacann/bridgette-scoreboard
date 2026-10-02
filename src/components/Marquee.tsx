@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@utils';
 
+/** Content and motion settings for the seamless scoreboard marquee. */
 type MarqueeProps = {
 	terms?: string[];
 	children?: React.ReactNode;
@@ -12,6 +13,7 @@ type MarqueeProps = {
 	'aria-hidden'?: boolean;
 };
 
+/** Renders a repeating, screen-reader-friendly marquee for three strikes. */
 export default function Marquee({
 	terms = [],
 	children,

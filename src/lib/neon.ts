@@ -1,4 +1,6 @@
+/** Authenticated Neon user fields used by the scoreboard account UI. */
 type AuthUser = { id: string; name?: string; email: string };
+/** Neon Auth session shape returned by the browser session endpoint. */
 type AuthSession = { user: AuthUser };
 
 const authUrl = import.meta.env.PUBLIC_NEON_AUTH_URL?.replace(/\/+$/u, '');
@@ -6,6 +8,7 @@ const dataApiUrl = import.meta.env.PUBLIC_NEON_DATA_API_URL?.replace(/\/+$/u, ''
 
 export const neonIsConfigured = Boolean(authUrl && dataApiUrl);
 
+/** Sends a same-origin-credentialed request to the configured Neon Auth API. */
 export async function neonAuth<T>(path: string, body?: Record<string, string>): Promise<T> {
 	if (!authUrl) throw new Error('Account sign-in is not configured for this site.');
 	const response = await fetch(`${authUrl}/${path.replace(/^\/+/, '')}`, {
@@ -19,12 +22,14 @@ export async function neonAuth<T>(path: string, body?: Record<string, string>): 
 	return data;
 }
 
+/** Returns the signed-in Neon user, or null when no session is available. */
 export async function getNeonSession(): Promise<AuthSession | null> {
 	if (!authUrl) return null;
 	const session = await neonAuth<AuthSession | null>('get-session');
 	return session?.user?.id && session.user.email ? session : null;
 }
 
+/** Retrieves the short-lived bearer token for Neon Data API requests. */
 export async function getNeonJwt(): Promise<string> {
 	const response = await neonAuth<{ token?: string; accessToken?: string }>('token');
 	const token = response.token ?? response.accessToken;
@@ -32,6 +37,7 @@ export async function getNeonJwt(): Promise<string> {
 	return token;
 }
 
+/** Sends an authenticated request to the configured Neon Data API. */
 export async function neonData<T>(path: string, init: RequestInit = {}): Promise<T> {
 	if (!dataApiUrl) throw new Error('The scoreboard database is not configured for this site.');
 	const token = await getNeonJwt();

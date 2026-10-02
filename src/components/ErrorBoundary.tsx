@@ -1,9 +1,12 @@
 import React from 'react';
 import { toast } from 'sonner';
 
+/** Inputs used to label and render a guarded scoreboard section. */
 type Props = { name: string; children: React.ReactNode; fallback?: (error: Error) => React.ReactNode };
+/** Error state captured while rendering the guarded section. */
 type State = { error: Error | null };
 
+/** Catches child render failures and reports them through the shared toast UI. */
 export class ErrorBoundary extends React.Component<Props, State> {
 	state: State = { error: null };
 
