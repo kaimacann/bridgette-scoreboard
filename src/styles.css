@@ -101,6 +101,16 @@
 }
 
 @layer components {
+	.toast-error-saturated[data-sonner-toast] {
+		background: #c1123f !important;
+		border-color: #8f092b !important;
+		color: #fffaf0 !important;
+	}
+
+	.toast-error-saturated [data-icon] {
+		color: #fffaf0 !important;
+	}
+
 	.h1 {
 		@apply mb-6 text-balance font-serif text-5xl italic;
 	}
@@ -142,12 +152,47 @@
 	}
 
 	/* Used for marquee */
+	.marquee-line {
+		display: flex;
+		width: max-content;
+		animation: slide 20s linear infinite;
+	}
+
+	.marquee-group {
+		display: flex;
+		flex: none;
+		width: max-content;
+	}
+
+	.marquee-item,
+	.marquee-gap {
+		flex: none;
+		white-space: nowrap;
+	}
+
+	.marquee-gap {
+		width: 2em;
+	}
+
+	.marquee-measure {
+		position: absolute;
+		visibility: hidden;
+		pointer-events: none;
+		white-space: nowrap;
+	}
+
 	@keyframes slide {
 		from {
 			transform: translateX(0);
 		}
 		to {
 			transform: translateX(-50%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.marquee-line {
+			animation-play-state: paused;
 		}
 	}
 

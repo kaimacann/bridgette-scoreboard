@@ -1,183 +1,73 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { createBridgetteHandler } from '../netlify/functions/bridgette.mjs';
 
-const DEFAULT_SCOREBOARD = {
-	pitchers: [
-		{ id: 'kai', name: 'Kai', strikes: 1 },
-		{ id: 'daniel', name: 'Daniel', strikes: 1 },
-	],
-};
+const [schema, client, gate, scoreboard, netlify, errors, boundary, styles] = await Promise.all([
+	readFile(new URL('../migrations/0001_accounts_and_scoreboards.sql', import.meta.url), 'utf8'),
+	readFile(new URL('../src/lib/neon.ts', import.meta.url), 'utf8'),
+	readFile(new URL('../src/components/account-gate.tsx', import.meta.url), 'utf8'),
+	readFile(new URL('../src/components/scoreboard.tsx', import.meta.url), 'utf8'),
+	readFile(new URL('../netlify.toml', import.meta.url), 'utf8'),
+	readFile(new URL('../src/lib/error-notifications.ts', import.meta.url), 'utf8'),
+	readFile(new URL('../src/components/ErrorBoundary.tsx', import.meta.url), 'utf8'),
+	readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
+]);
 
-function createFixture({ env = {}, initial = new Map(), failRead = false, failWrite = false } = {}) {
-	const values = initial;
-	const writes = [];
-	const reads = [];
-	const errors = [];
-	const storeFactory = target => {
-		const key = typeof target === 'string' ? `current:${target}` : `${target.siteID}:${target.name}`;
-		return {
-			async get(dataKey) {
-				reads.push([key, dataKey]);
-				if (failRead) throw new Error('read failed');
-				return values.get(`${key}:${dataKey}`) ?? null;
-			},
-			async setJSON(dataKey, value) {
-				if (failWrite) throw new Error('write failed');
-				writes.push([key, dataKey, structuredClone(value)]);
-				values.set(`${key}:${dataKey}`, structuredClone(value));
-			},
-		};
-	};
-	const handler = createBridgetteHandler({ getStore: storeFactory, env, logger: { error: (...args) => errors.push(args) } });
-	return { handler, values, writes, reads, errors };
-}
-
-async function json(response) {
-	return response.json();
-}
-
-function get() {
-	return new Request('https://scoreboard.test/api/bridgette');
-}
-
-function put(payload, token = 'valid-editor-key') {
-	return new Request('https://scoreboard.test/api/bridgette', {
-		method: 'PUT',
-		headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-		body: JSON.stringify(payload),
-	});
-}
-
-test('GET seeds and returns the default scoreboard when storage is empty', async () => {
-	const fixture = createFixture();
-	const response = await fixture.handler(get());
-	assert.equal(response.status, 200);
-	assert.equal(response.headers.get('cache-control'), 'no-store');
-	assert.deepEqual(await json(response), DEFAULT_SCOREBOARD);
-	assert.deepEqual(fixture.writes[0], ['current:bridgette-dashboard', 'scoreboard', DEFAULT_SCOREBOARD]);
+test('scoreboard rows have a Neon Auth owner and stay account-scoped', () => {
+	assert.match(schema, /owner_id text NOT NULL DEFAULT \(auth\.user_id\(\)\)/);
+	assert.match(schema, /scoreboards_read_owner_or_strikee[\s\S]*?auth\.user_id\(\)[\s\S]*?is_scoreboard_strikee/);
+	assert.match(schema, /scoreboards_create_for_self[\s\S]*?WITH CHECK \(\(SELECT auth\.user_id\(\)\) = owner_id\)/);
+	assert.match(schema, /scoreboards_update_owner_or_strikee/);
 });
 
-test('GET returns an existing valid scoreboard without overwriting it', async () => {
-	const existing = { pitchers: [{ id: 'guest', name: 'Guest', strikes: 2 }] };
-	const fixture = createFixture({ initial: new Map([['current:bridgette-dashboard:scoreboard', existing]]) });
-	assert.deepEqual(await json(await fixture.handler(get())), existing);
-	assert.equal(fixture.writes.length, 0);
+test('only creators can add strikee shares; strikees can read and edit score counts', () => {
+	assert.match(schema, /scoreboard_shares_create_by_owner[\s\S]*?b\.owner_id = \(SELECT auth\.user_id\(\)\)/);
+	assert.match(schema, /scoreboard_shares_read_owner_or_strikee[\s\S]*?strikee_email = lower\(auth\.session\(\)->>'email'\)/);
+	assert.match(schema, /GRANT UPDATE \(pitchers, updated_at\) ON public\.scoreboards TO authenticated/);
+	assert.match(schema, /REVOKE ALL ON FUNCTION public\.is_scoreboard_strikee\(uuid\) FROM PUBLIC/);
 });
 
-test('GET repairs invalid stored data by seeding the defaults', async () => {
-	const fixture = createFixture({ initial: new Map([['current:bridgette-dashboard:scoreboard', { pitchers: [{ id: '', name: 'Bad', strikes: 9 }] }]]) });
-	assert.deepEqual(await json(await fixture.handler(get())), DEFAULT_SCOREBOARD);
-	assert.equal(fixture.writes.length, 1);
+test('unauthenticated Data API roles have no scoreboard access', () => {
+	assert.match(schema, /ALTER TABLE public\.scoreboards ENABLE ROW LEVEL SECURITY/);
+	assert.match(schema, /ALTER TABLE public\.scoreboard_shares ENABLE ROW LEVEL SECURITY/);
+	assert.match(schema, /REVOKE ALL ON public\.scoreboards, public\.scoreboard_shares FROM PUBLIC, anon/);
+	assert.doesNotMatch(schema, /TO anon/);
 });
 
-test('GET migrates a valid scoreboard from the configured source and writes it once locally', async () => {
-	const migrated = { pitchers: [{ id: 'old-kai', name: 'Kai', strikes: 3 }] };
-	const fixture = createFixture({
-		env: { BRIDGETTE_MIGRATION_SITE_ID: 'previous-site', BRIDGETTE_MIGRATION_BLOBS_TOKEN: 'migration-token' },
-		initial: new Map([['previous-site:bridgette-dashboard:scoreboard', migrated]]),
-	});
-	assert.deepEqual(await json(await fixture.handler(get())), migrated);
-	assert.deepEqual(fixture.writes, [['current:bridgette-dashboard', 'scoreboard', migrated]]);
+test('browser exchanges a Neon Auth session for a short-lived Data API JWT', () => {
+	assert.match(client, /credentials: 'include'/);
+	assert.match(client, /'token'/);
+	assert.match(client, /Authorization', `Bearer \$\{token\}`/);
+	assert.match(gate, /sign-in\/email/);
+	assert.match(gate, /sign-up\/email/);
+	assert.doesNotMatch(gate, /prompt\(|editor key/i);
 });
 
-test('GET ignores invalid migration data and initializes local defaults', async () => {
-	const fixture = createFixture({
-		env: { BRIDGETTE_MIGRATION_SITE_ID: 'previous-site', BRIDGETTE_MIGRATION_BLOBS_TOKEN: 'migration-token' },
-		initial: new Map([['previous-site:bridgette-dashboard:scoreboard', { pitchers: 'invalid' }]]),
-	});
-	assert.deepEqual(await json(await fixture.handler(get())), DEFAULT_SCOREBOARD);
-	assert.equal(fixture.writes[0][0], 'current:bridgette-dashboard');
+test('scoreboards and share invitations are stored in Neon instead of browser storage or Netlify Blobs', () => {
+	assert.match(scoreboard, /scoreboards\?select=id,owner_id,title,pitchers/);
+	assert.match(scoreboard, /scoreboard_shares/);
+	assert.doesNotMatch(scoreboard, /localStorage|sessionStorage|bridgette-editor-token|\/api\/bridgette/);
+	assert.doesNotMatch(netlify, /\/api\/bridgette|netlify\/functions/);
 });
 
-test('GET maps storage failures to a safe server error', async () => {
-	const fixture = createFixture({ failRead: true });
-	const response = await fixture.handler(get());
-	assert.equal(response.status, 500);
-	assert.deepEqual(await json(response), { error: 'The scoreboard could not be loaded.' });
-	assert.equal(fixture.errors[0][0], 'scoreboard.read.failed');
+test('account, data, share, and render failures log to console and use Sonner error toasts', () => {
+	assert.match(errors, /console\.error/);
+	assert.match(errors, /toast\.error/);
+	assert.match(gate, /notifyError\('Account sign-in'/);
+	assert.match(gate, /notifyError\('Account sign-out'/);
+	assert.match(scoreboard, /notifyError\('Scoreboard save'/);
+	assert.match(scoreboard, /notifyError\('Scoreboard load'/);
+	assert.match(scoreboard, /notifyError\('Scoreboard share'/);
+	assert.match(boundary, /console\.error/);
+	assert.match(boundary, /toast\.error/);
+	assert.doesNotMatch(gate, /role='alert'/);
+	assert.doesNotMatch(scoreboard, /<Alert|role='alert'/);
 });
 
-test('unsupported methods are rejected with an Allow header', async () => {
-	const fixture = createFixture();
-	const response = await fixture.handler(new Request('https://scoreboard.test/api/bridgette', { method: 'DELETE' }));
-	assert.equal(response.status, 405);
-	assert.equal(response.headers.get('allow'), 'GET, PUT');
-});
-
-test('PUT rejects missing and incorrect editor keys without touching storage', async () => {
-	for (const token of [null, 'wrong']) {
-		const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' } });
-		const request = token === null
-			? new Request('https://scoreboard.test/api/bridgette', { method: 'PUT', body: JSON.stringify(DEFAULT_SCOREBOARD) })
-			: put(DEFAULT_SCOREBOARD, token);
-		const response = await fixture.handler(request);
-		assert.equal(response.status, 401);
-		assert.deepEqual(await json(response), { error: 'A valid editor key is required.' });
-		assert.equal(fixture.writes.length, 0);
-	}
-});
-
-test('PUT rejects an unset editor key', async () => {
-	const fixture = createFixture();
-	assert.equal((await fixture.handler(put(DEFAULT_SCOREBOARD))).status, 401);
-	assert.equal(fixture.writes.length, 0);
-});
-
-test('PUT trims names, saves the valid payload, and returns the canonical data', async () => {
-	const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' } });
-	const canonical = { pitchers: [{ id: 'kai', name: 'Kai', strikes: 2 }] };
-	const response = await fixture.handler(put({ pitchers: [{ id: 'kai', name: '  Kai  ', strikes: 2 }] }));
-	assert.equal(response.status, 200);
-	assert.deepEqual(await json(response), { data: canonical });
-	assert.deepEqual(fixture.writes, [['current:bridgette-dashboard', 'scoreboard', canonical]]);
-});
-
-test('PUT rejects malformed JSON without a partial write', async () => {
-	const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' } });
-	const response = await fixture.handler(new Request('https://scoreboard.test/api/bridgette', {
-		method: 'PUT',
-		headers: { authorization: 'Bearer valid-editor-key', 'content-type': 'application/json' },
-		body: '{',
-	}));
-	assert.equal(response.status, 400);
-	assert.deepEqual(await json(response), { error: 'The scoreboard update is invalid.' });
-	assert.equal(fixture.writes.length, 0);
-});
-
-test('PUT rejects invalid pitcher fields and boundary values without saving', async t => {
-	const cases = [
-		['empty id', { pitchers: [{ id: '', name: 'Kai', strikes: 1 }] }],
-		['id longer than 80 characters', { pitchers: [{ id: 'i'.repeat(81), name: 'Kai', strikes: 1 }] }],
-		['empty trimmed name', { pitchers: [{ id: 'kai', name: '  ', strikes: 1 }] }],
-		['name longer than 80 characters', { pitchers: [{ id: 'kai', name: 'n'.repeat(81), strikes: 1 }] }],
-		['non-integer strikes', { pitchers: [{ id: 'kai', name: 'Kai', strikes: 1.5 }] }],
-		['strikes below one', { pitchers: [{ id: 'kai', name: 'Kai', strikes: 0 }] }],
-		['strikes above three', { pitchers: [{ id: 'kai', name: 'Kai', strikes: 4 }] }],
-		['more than 100 pitchers', { pitchers: Array.from({ length: 101 }, (_, i) => ({ id: `p${i}`, name: 'Pitcher', strikes: 1 })) }],
-		['missing pitchers array', { pitchers: null }],
-	];
-	for (const [label, payload] of cases) {
-		await t.test(label, async () => {
-			const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' } });
-			const response = await fixture.handler(put(payload));
-			assert.equal(response.status, 400);
-			assert.deepEqual(await json(response), { error: 'The scoreboard update is invalid.' });
-			assert.equal(fixture.writes.length, 0);
-		});
-	}
-});
-
-test('PUT rejects a malformed request body shape without writing', async () => {
-	const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' } });
-	assert.equal((await fixture.handler(put({}))).status, 400);
-	assert.equal(fixture.writes.length, 0);
-});
-
-test('PUT maps persistence failures to a safe server error', async () => {
-	const fixture = createFixture({ env: { BRIDGETTE_EDITOR_TOKEN: 'valid-editor-key' }, failWrite: true });
-	const response = await fixture.handler(put(DEFAULT_SCOREBOARD));
-	assert.equal(response.status, 500);
-	assert.deepEqual(await json(response), { error: 'The scoreboard could not be saved.' });
-	assert.equal(fixture.errors[0][0], 'scoreboard.update.failed');
+test('Sonner is mounted with rich colors and a saturated accessible error surface', () => {
+	assert.match(gate, /<Toaster[^>]*richColors/);
+	assert.match(gate, /toast-error-saturated/);
+	assert.match(styles, /\.toast-error-saturated\[data-sonner-toast\]/);
+	assert.match(styles, /background:\s*#c1123f/);
+	assert.match(styles, /color:\s*#fffaf0/);
 });

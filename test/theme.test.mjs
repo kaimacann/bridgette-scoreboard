@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
-const [css, layout, scoreboard, imageTheme] = await Promise.all([
+const [css, layout, scoreboard, imageTheme, accountGate, marquee] = await Promise.all([
 	readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
 	readFile(new URL('../src/layouts/SiteLayout.astro', import.meta.url), 'utf8'),
 	readFile(new URL('../src/components/scoreboard.tsx', import.meta.url), 'utf8'),
 	readFile(new URL('../src/components/tile.ts', import.meta.url), 'utf8'),
+	readFile(new URL('../src/components/account-gate.tsx', import.meta.url), 'utf8'),
+	readFile(new URL('../src/components/Marquee.tsx', import.meta.url), 'utf8'),
 ]);
-const page = await readFile(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
-
 function token(name) {
 	const match = css.match(new RegExp(`--${name}:\\s*(\\d{1,3} \\d{1,3} \\d{1,3})`, 'i'));
 	assert.ok(match, `Expected CSS theme token --${name}`);
@@ -37,7 +37,7 @@ test('cream page surface and burgundy brand surface use semantic theme tokens', 
 	assert.match(layout, /bg-primary-1/);
 	assert.match(layout, /text-primary-12/);
 	assert.match(scoreboard, /bg-secondary-12[^\n]*text-secondary-1/);
-	assert.match(page, /bg-primary-1/);
+	assert.match(accountGate, /bg-primary-1/);
 	assert.match(scoreboard, /bg-primary-1 pr-6/);
 	assert.deepEqual(token('primary-1'), [255, 250, 240]);
 	assert.deepEqual(token('secondary-12'), [100, 23, 43]);
@@ -69,4 +69,18 @@ test('score controls expose names and use the cream and burgundy palette', () =>
 	assert.match(scoreboard, /aria-label='Increase strike count'/);
 	assert.match(scoreboard, /bg-secondary-1 text-secondary-12/);
 	assert.match(scoreboard, /bg-primary-12[^\n]*text-primary-1/);
+});
+
+test('three-strike marquee has a seamless animation and respects reduced motion', () => {
+	assert.match(css, /\.marquee-line\s*\{[^}]*animation:\s*slide\s+20s\s+linear\s+infinite/s);
+	assert.match(css, /transform:\s*translateX\(-50%\)/);
+	assert.match(css, /prefers-reduced-motion:\s*reduce/);
+	assert.match(marquee, /animationDuration/);
+	assert.match(marquee, /animationDirection:\s*reverse/);
+	assert.match(marquee, /ResizeObserver/);
+	assert.match(marquee, /Math\.ceil\(viewportWidth\s*\/\s*itemWidth\)/);
+	assert.match(marquee, /renderGroup\(0\)[\s\S]*renderGroup\(1\)/);
+	assert.match(marquee, /className='sr-only' role='status'/);
+	assert.match(marquee, /className='marquee-line'[\s\S]*aria-hidden='true'/);
+	assert.match(scoreboard, /strikes === 3[\s\S]*?<Marquee/);
 });

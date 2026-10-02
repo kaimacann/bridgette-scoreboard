@@ -1,10 +1,8 @@
 ---
-import Scoreboard from '../components/scoreboard';
 import SiteLayout from '../layouts/SiteLayout.astro';
+import AccountGate from '../components/account-gate';
 ---
 
 <SiteLayout title="Community Scoreboard" description="A shared community baseball scoreboard.">
-	<main class="min-h-screen bg-primary-1">
-		<Scoreboard client:load />
-	</main>
+	<AccountGate client:load />
 </SiteLayout>

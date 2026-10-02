@@ -1,3 +1,8 @@
+interface ImportMetaEnv {
+	readonly PUBLIC_NEON_AUTH_URL?: string;
+	readonly PUBLIC_NEON_DATA_API_URL?: string;
+}
+
 declare module 'react-simple-maps' {
 	import type React from 'react';
 	export type MapGeography = {
