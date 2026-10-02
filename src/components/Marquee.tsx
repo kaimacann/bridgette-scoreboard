@@ -14,14 +14,7 @@ type MarqueeProps = {
 };
 
 /** Renders a repeating, screen-reader-friendly marquee for three strikes. */
-export default function Marquee({
-	terms = [],
-	children,
-	className,
-	duration = 20_000,
-	reverse = false,
-	'aria-hidden': ariaHidden = false,
-}: MarqueeProps) {
+export default function Marquee({ terms = [], children, className, duration = 20_000, reverse = false, 'aria-hidden': ariaHidden = false }: MarqueeProps) {
 	const content = children ?? terms.join('　　');
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const sampleRef = useRef<HTMLSpanElement>(null);
@@ -57,14 +50,15 @@ export default function Marquee({
 	);
 
 	return (
-		<div
-			ref={viewportRef}
-			className={cn('marquee-viewport relative overflow-hidden whitespace-nowrap', className)}
-			aria-hidden={ariaHidden || undefined}
-		>
-			{terms.length > 0 && !ariaHidden && <span className='sr-only' role='status'>{terms.join(' ')}</span>}
+		<div ref={viewportRef} className={cn('marquee-viewport relative overflow-hidden whitespace-nowrap', className)} aria-hidden={ariaHidden || undefined}>
+			{terms.length > 0 && !ariaHidden && (
+				<span className='sr-only' role='status'>
+					{terms.join(' ')}
+				</span>
+			)}
 			<span ref={sampleRef} className='marquee-measure' aria-hidden='true'>
-				{content}<span className='marquee-gap' />
+				{content}
+				<span className='marquee-gap' />
 			</span>
 			<div
 				className='marquee-line'

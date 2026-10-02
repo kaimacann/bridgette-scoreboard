@@ -8,7 +8,11 @@ const dataApiUrl = import.meta.env.PUBLIC_NEON_DATA_API_URL?.replace(/\/+$/u, ''
 
 export const neonIsConfigured = Boolean(authUrl && dataApiUrl);
 
-/** Sends a same-origin-credentialed request to the configured Neon Auth API. */
+/** Sends a same-origin-credentialed request to the configured Neon Auth API.
+ * @param path Endpoint path relative to the configured auth service.
+ * @param body Optional JSON request payload; supplying it selects the POST method.
+ * @returns The response body parsed as the requested result type.
+ */
 export async function neonAuth<T>(path: string, body?: Record<string, string>): Promise<T> {
 	if (!authUrl) throw new Error('Account sign-in is not configured for this site.');
 	const response = await fetch(`${authUrl}/${path.replace(/^\/+/, '')}`, {
@@ -17,7 +21,10 @@ export async function neonAuth<T>(path: string, body?: Record<string, string>): 
 		headers: body ? { 'Content-Type': 'application/json' } : undefined,
 		body: body ? JSON.stringify(body) : undefined,
 	});
-	const data = (await response.json().catch(() => ({}))) as T & { message?: string; error?: string };
+	const data = (await response.json().catch(() => ({}))) as T & {
+		message?: string;
+		error?: string;
+	};
 	if (!response.ok) throw new Error(data.message ?? data.error ?? 'Account request failed.');
 	return data;
 }
@@ -37,7 +44,11 @@ export async function getNeonJwt(): Promise<string> {
 	return token;
 }
 
-/** Sends an authenticated request to the configured Neon Data API. */
+/** Sends an authenticated request to the configured Neon Data API.
+ * @param path Resource path relative to the configured data API.
+ * @param init Optional fetch settings such as the method, headers, and request body.
+ * @returns The response body parsed as the requested result type.
+ */
 export async function neonData<T>(path: string, init: RequestInit = {}): Promise<T> {
 	if (!dataApiUrl) throw new Error('The scoreboard database is not configured for this site.');
 	const token = await getNeonJwt();
@@ -45,7 +56,10 @@ export async function neonData<T>(path: string, init: RequestInit = {}): Promise
 	headers.set('Authorization', `Bearer ${token}`);
 	headers.set('Accept', 'application/json');
 	if (init.body) headers.set('Content-Type', 'application/json');
-	const response = await fetch(`${dataApiUrl}/${path.replace(/^\/+/, '')}`, { ...init, headers });
+	const response = await fetch(`${dataApiUrl}/${path.replace(/^\/+/, '')}`, {
+		...init,
+		headers,
+	});
 	const data = (await response.json().catch(() => null)) as T | { message?: string; details?: string } | null;
 	if (!response.ok) {
 		const failure = data && typeof data === 'object' && 'message' in data ? data.message : null;

@@ -23,7 +23,22 @@ declare module 'react-simple-maps' {
 		};
 	};
 	export const ComposableMap: React.ComponentType<React.PropsWithChildren<{ projection?: string; className?: string }>>;
-	export const ZoomableGroup: React.ComponentType<React.PropsWithChildren<{ center?: [number, number]; zoom?: number; minZoom?: number; maxZoom?: number }>>;
-	export const Geographies: React.ComponentType<{ geography: unknown; children: (props: { geographies: MapGeography[] }) => React.ReactNode }>;
-	export const Geography: React.ComponentType<{ geography: MapGeography; className?: string; onClick?: () => void; key?: React.Key }>;
+	export const ZoomableGroup: React.ComponentType<
+		React.PropsWithChildren<{
+			center?: [number, number];
+			zoom?: number;
+			minZoom?: number;
+			maxZoom?: number;
+		}>
+	>;
+	export const Geographies: React.ComponentType<{
+		geography: unknown;
+		children: (props: { geographies: MapGeography[] }) => React.ReactNode;
+	}>;
+	export const Geography: React.ComponentType<{
+		geography: MapGeography;
+		className?: string;
+		onClick?: () => void;
+		key?: React.Key;
+	}>;
 }

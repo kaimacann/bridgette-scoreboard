@@ -11,6 +11,10 @@ const [css, layout, scoreboard, imageTheme, accountGate, marquee] = await Promis
 	readFile(new URL('../src/components/Marquee.tsx', import.meta.url), 'utf8'),
 ]);
 /** Reads one RGB theme token from the shared stylesheet. */
+/** Reads a named CSS custom property from the project's root theme declaration.
+ * @param name Custom property name, including its leading `--` prefix.
+ * @returns The declaration value, or an empty string when the theme omits it.
+ */
 function token(name) {
 	const match = css.match(new RegExp(`--${name}:\\s*(\\d{1,3} \\d{1,3} \\d{1,3})`, 'i'));
 	assert.ok(match, `Expected CSS theme token --${name}`);
@@ -18,13 +22,22 @@ function token(name) {
 }
 
 /** Converts an RGB color to relative luminance for contrast checks. */
+/** Converts an RGB color into the relative luminance used for contrast checks.
+ * @param rgb Three sRGB channel values in the inclusive range from 0 to 255.
+ * @returns WCAG relative luminance between 0 and 1.
+ */
 function luminance(rgb) {
 	const channels = rgb.map(channel => channel / 255);
-	const linear = channels.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+	const linear = channels.map(value => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
 	return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
 }
 
 /** Calculates the WCAG contrast ratio between two RGB colors. */
+/** Calculates the WCAG contrast ratio between two RGB colors.
+ * @param a First RGB color to compare.
+ * @param b Second RGB color to compare.
+ * @returns Contrast ratio between 1 and 21.
+ */
 function contrast(a, b) {
 	const values = [luminance(a), luminance(b)].sort((left, right) => right - left);
 	return (values[0] + 0.05) / (values[1] + 0.05);

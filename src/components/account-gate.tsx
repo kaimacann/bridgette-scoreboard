@@ -19,19 +19,23 @@ export default function AccountGate(): React.JSX.Element {
 
 	useEffect(() => {
 		let mounted = true;
-		void getNeonSession().then(current => {
-			if (mounted) {
-				setSession(current);
-				setChecking(false);
-			}
-		}).catch(caught => {
-			if (mounted) {
-				setChecking(false);
-				notifyError('Account session', caught, 'Unable to check your account session.');
-			}
-		});
+		void getNeonSession()
+			.then(current => {
+				if (mounted) {
+					setSession(current);
+					setChecking(false);
+				}
+			})
+			.catch(caught => {
+				if (mounted) {
+					setChecking(false);
+					notifyError('Account session', caught, 'Unable to check your account session.');
+				}
+			});
 		if (!neonIsConfigured) notifyError('Account setup', new Error('Neon Auth and Data API URLs are not configured.'), 'Account sign-in is not configured.');
-		return () => { mounted = false; };
+		return () => {
+			mounted = false;
+		};
 	}, []);
 
 	/** Sends account credentials to Neon Auth and loads the resulting session. */
@@ -60,29 +64,89 @@ export default function AccountGate(): React.JSX.Element {
 		}
 	}
 
-	if (checking) return <><Toaster position='top-right' richColors toastOptions={{ duration: 8000, classNames: { error: 'toast-error-saturated' } }} /><div className='grid min-h-screen place-items-center bg-primary-1 text-primary-12'>Loading account…</div></>;
-	if (session) return <><Toaster position='top-right' richColors toastOptions={{ duration: 8000, classNames: { error: 'toast-error-saturated' } }} /><Scoreboard account={{ id: session.user.id, email: session.user.email }} signOut={signOut} /></>;
+	if (checking)
+		return (
+			<>
+				<Toaster
+					position='top-right'
+					richColors
+					toastOptions={{
+						duration: 8000,
+						classNames: { error: 'toast-error-saturated' },
+					}}
+				/>
+				<div className='grid min-h-screen place-items-center bg-primary-1 text-primary-12'>Loading account…</div>
+			</>
+		);
+	if (session)
+		return (
+			<>
+				<Toaster
+					position='top-right'
+					richColors
+					toastOptions={{
+						duration: 8000,
+						classNames: { error: 'toast-error-saturated' },
+					}}
+				/>
+				<Scoreboard account={{ id: session.user.id, email: session.user.email }} signOut={signOut} />
+			</>
+		);
 
 	return (
 		<>
-		<Toaster position='top-right' richColors toastOptions={{ duration: 8000, classNames: { error: 'toast-error-saturated' } }} />
-		<main className='grid min-h-screen place-items-center bg-primary-1 p-6 text-primary-12'>
-			<section className='w-full max-w-md rounded-lg border border-secondary-5 bg-primary-2 p-8 shadow-sm'>
-				<h1 className='mb-2 text-3xl' style={{ fontFamily: '"Playball", cursive' }}>Bridgette&apos;s Strikes</h1>
-				<p className='mb-6 text-sm'>Sign in to keep your scoreboard with your account and share it with a strikee.</p>
-				{!neonIsConfigured ? (
-					<p role='status' className='rounded border border-secondary-6 bg-primary-1 p-4 text-sm'>Connect Neon Auth and the Data API to enable account sign-in.</p>
-				) : (
-					<form className='grid gap-4' onSubmit={event => void submit(event)}>
-						{signup && <label className='grid gap-1 text-sm'>Name<input required autoComplete='name' value={name} onChange={event => setName(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' /></label>}
-						<label className='grid gap-1 text-sm'>Email<input required type='email' autoComplete='email' value={email} onChange={event => setEmail(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' /></label>
-						<label className='grid gap-1 text-sm'>Password<input required type='password' autoComplete={signup ? 'new-password' : 'current-password'} minLength={8} value={password} onChange={event => setPassword(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' /></label>
-						<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}</button>
-						<button type='button' className='text-sm underline' onClick={() => setSignup(!signup)}>{signup ? 'Already have an account? Sign in' : 'Create an account'}</button>
-					</form>
-				)}
-			</section>
-		</main>
+			<Toaster
+				position='top-right'
+				richColors
+				toastOptions={{
+					duration: 8000,
+					classNames: { error: 'toast-error-saturated' },
+				}}
+			/>
+			<main className='grid min-h-screen place-items-center bg-primary-1 p-6 text-primary-12'>
+				<section className='w-full max-w-md rounded-lg border border-secondary-5 bg-primary-2 p-8 shadow-sm'>
+					<h1 className='mb-2 text-3xl' style={{ fontFamily: '"Playball", cursive' }}>
+						Bridgette&apos;s Strikes
+					</h1>
+					<p className='mb-6 text-sm'>Sign in to keep your scoreboard with your account and share it with a strikee.</p>
+					{!neonIsConfigured ? (
+						<p role='status' className='rounded border border-secondary-6 bg-primary-1 p-4 text-sm'>
+							Connect Neon Auth and the Data API to enable account sign-in.
+						</p>
+					) : (
+						<form className='grid gap-4' onSubmit={event => void submit(event)}>
+							{signup && (
+								<label className='grid gap-1 text-sm'>
+									Name
+									<input required autoComplete='name' value={name} onChange={event => setName(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' />
+								</label>
+							)}
+							<label className='grid gap-1 text-sm'>
+								Email
+								<input required type='email' autoComplete='email' value={email} onChange={event => setEmail(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' />
+							</label>
+							<label className='grid gap-1 text-sm'>
+								Password
+								<input
+									required
+									type='password'
+									autoComplete={signup ? 'new-password' : 'current-password'}
+									minLength={8}
+									value={password}
+									onChange={event => setPassword(event.target.value)}
+									className='rounded border border-secondary-5 bg-primary-1 px-3 py-2'
+								/>
+							</label>
+							<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>
+								{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
+							</button>
+							<button type='button' className='text-sm underline' onClick={() => setSignup(!signup)}>
+								{signup ? 'Already have an account? Sign in' : 'Create an account'}
+							</button>
+						</form>
+					)}
+				</section>
+			</main>
 		</>
 	);
 }
