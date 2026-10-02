@@ -13,7 +13,12 @@ type MarqueeProps = {
 	'aria-hidden'?: boolean;
 };
 
-/** Renders a repeating, screen-reader-friendly marquee for three strikes. */
+/**
+ * Renders a repeating, screen-reader-friendly marquee for three strikes.
+ *
+ * @param props - Optional repeated terms or custom children plus motion, row, and accessibility settings for the marquee.
+ * @returns The measured marquee viewport and its duplicated animated content.
+ */
 export default function Marquee({ terms = [], children, className, duration = 20_000, reverse = false, 'aria-hidden': ariaHidden = false }: MarqueeProps) {
 	const content = children ?? terms.join('　　');
 	const viewportRef = useRef<HTMLDivElement>(null);

@@ -101,6 +101,7 @@ COMPONENT
 /**
  * Renders the account-scoped scoreboard and its strike and sharing controls.
  *
+ * @param props - Account details and session sign-out callback used by the scoreboard data and controls.
  * @param account - Signed-in account whose scoreboards are available here.
  * @param signOut - Callback that ends the current account session.
  *
@@ -122,21 +123,21 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 	// PROCESS
 	const req = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => neonData<T>(path, init), []);
 
-	const commit = useCallback((nPitchers: PitcherData[], nId?: string | null): void => {
-		const sel = (nId && nPitchers.some(p => p.id === nId) && nId) || nPitchers[0]?.id || null;
-		setPitchers(nPitchers);
+	const commit = useCallback((nextPitchers: PitcherData[], nextId?: string | null): void => {
+		const sel = (nextId && nextPitchers.some(p => p.id === nextId) && nextId) || nextPitchers[0]?.id || null;
+		setPitchers(nextPitchers);
 		setSelId(sel);
 	}, []);
 
 	const persist = useCallback(
-		async (nPitchers: PitcherData[]): Promise<void> => {
+		async (nextPitchers: PitcherData[]): Promise<void> => {
 			try {
 				if (!dashboardId) throw new Error('Choose a scoreboard before saving.');
 				await req<DashboardRecord[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
 					method: 'PATCH',
 					headers: { Prefer: 'return=representation' },
 					body: JSON.stringify({
-						pitchers: nPitchers,
+						pitchers: nextPitchers,
 						updated_at: new Date().toISOString(),
 					}),
 				});
@@ -210,7 +211,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 			return undefined;
 		}
 		const interval = window.setInterval((): void => {
-			setFlash(curr => !curr);
+			setFlash(current => !current);
 		}, 225);
 		return (): void => {
 			window.clearInterval(interval);
@@ -385,6 +386,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 /**
  * Renders the Bridgette controls and image board.
  *
+ * @param props - Signed-in account identity and the callback used to end its session.
  * @returns A JSX element representing the strike tracker wrapped in an ErrorBoundary.
  */
 export default function Scoreboard({ account, signOut }: { account: { id: string; email: string }; signOut: () => Promise<void> }): React.JSX.Element {

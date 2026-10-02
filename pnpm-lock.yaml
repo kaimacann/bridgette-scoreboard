@@ -55,8 +55,8 @@ importers:
         specifier: ^0.5.20
         version: 0.5.20(tailwindcss@3.4.19(yaml@2.9.1))
       '@terra-symposium/quality':
-        specifier: 0.4.34
-        version: 0.4.34
+        specifier: 0.4.41
+        version: 0.4.41
       '@types/react':
         specifier: ^19.2.18
         version: 19.3.0
@@ -1586,8 +1586,8 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || >=4.0.0 || insiders'
 
-  '@terra-symposium/quality@0.4.34':
-    resolution: {integrity: sha512-0p4hn9zRrQ9SoNUQ121hVowyw/M8JOBb4PCN3fgIfj5MKrUzNtN37Ry1tXUw8dq6NUCloF0X6bRBr1yUEvv5vA==}
+  '@terra-symposium/quality@0.4.41':
+    resolution: {integrity: sha512-uiMLfDV2icwIc5kN7DNcwMn9UcT6wdQB33/VXva/5FBT8hZ34Z8Ke2chZzTqHXtn3f8Ck9emaUEuYOb7Bl808A==}
     engines: {node: '>=18.18'}
     hasBin: true
 
@@ -4746,7 +4746,7 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.4.19(yaml@2.9.1)
 
-  '@terra-symposium/quality@0.4.34':
+  '@terra-symposium/quality@0.4.41':
     dependencies:
       typescript: 5.9.3
 

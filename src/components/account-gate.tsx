@@ -7,7 +7,11 @@ import Scoreboard from './scoreboard';
 /** The authenticated account details required by the scoreboard gate. */
 type Session = { user: { id: string; name?: string; email: string } };
 
-/** Shows sign-in or account creation before exposing the user's scoreboards. */
+/**
+ * Shows sign-in or account creation before exposing the user's scoreboards.
+ *
+ * @returns The account loading, authentication, or scoreboard view for the current session.
+ */
 export default function AccountGate(): React.JSX.Element {
 	const [session, setSession] = useState<Session | null>(null);
 	const [checking, setChecking] = useState(true);
@@ -38,7 +42,11 @@ export default function AccountGate(): React.JSX.Element {
 		};
 	}, []);
 
-	/** Sends account credentials to Neon Auth and loads the resulting session. */
+	/**
+	 * Sends account credentials to Neon Auth and loads the resulting session.
+	 *
+	 * @param event - Browser form submission whose default navigation is prevented while authentication runs.
+	 */
 	async function submit(event: SubmitEvent<HTMLFormElement>): Promise<void> {
 		event.preventDefault();
 		setBusy(true);

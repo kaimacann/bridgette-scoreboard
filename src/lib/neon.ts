@@ -29,14 +29,22 @@ export async function neonAuth<T>(path: string, body?: Record<string, string>): 
 	return data;
 }
 
-/** Returns the signed-in Neon user, or null when no session is available. */
+/**
+ * Returns the signed-in Neon user, or null when no session is available.
+ *
+ * @returns The authenticated session when present, or null when authentication is unavailable or signed out.
+ */
 export async function getNeonSession(): Promise<AuthSession | null> {
 	if (!authUrl) return null;
 	const session = await neonAuth<AuthSession | null>('get-session');
 	return session?.user?.id && session.user.email ? session : null;
 }
 
-/** Retrieves the short-lived bearer token for Neon Data API requests. */
+/**
+ * Retrieves the short-lived bearer token for Neon Data API requests.
+ *
+ * @returns The current session's bearer token for authorizing Data API requests.
+ */
 export async function getNeonJwt(): Promise<string> {
 	const response = await neonAuth<{ token?: string; accessToken?: string }>('token');
 	const token = response.token ?? response.accessToken;
