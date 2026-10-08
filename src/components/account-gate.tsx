@@ -3,9 +3,11 @@ import { Toaster } from 'sonner';
 import { notifyError } from '../lib/error-notifications';
 import { getNeonSession, neonAuth, neonIsConfigured } from '../lib/neon';
 import Scoreboard from './scoreboard';
-
-/** The authenticated account details required by the scoreboard gate. */
-type Session = { user: { id: string; name?: string; email: string } };
+/*//////////////////////////////////////////////////
+CLASSES
+//////////////////////////////////////////////////*/
+const GRID_GAP_1_TEXT_SM_CLASS = 'grid gap-1 text-sm';
+const ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS = 'rounded border border-secondary-5 bg-primary-1 px-3 py-2';
 
 /**
  * Shows sign-in or account creation before exposing the user's scoreboards.
@@ -13,7 +15,13 @@ type Session = { user: { id: string; name?: string; email: string } };
  * @returns The account loading, authentication, or scoreboard view for the current session.
  */
 export default function AccountGate(): React.JSX.Element {
-	const [session, setSession] = useState<Session | null>(null);
+	const [session, setSession] = useState<{
+		user: {
+			id: string;
+			name?: string;
+			email: string;
+		};
+	} | null>(null);
 	const [checking, setChecking] = useState(true);
 	const [signup, setSignup] = useState(false);
 	const [email, setEmail] = useState('');
@@ -124,16 +132,23 @@ export default function AccountGate(): React.JSX.Element {
 					) : (
 						<form className='grid gap-4' onSubmit={event => void submit(event)}>
 							{signup && (
-								<label className='grid gap-1 text-sm'>
+								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Name
-									<input required autoComplete='name' value={name} onChange={event => setName(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' />
+									<input required autoComplete='name' value={name} onChange={event => setName(event.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
 								</label>
 							)}
-							<label className='grid gap-1 text-sm'>
+							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 								Email
-								<input required type='email' autoComplete='email' value={email} onChange={event => setEmail(event.target.value)} className='rounded border border-secondary-5 bg-primary-1 px-3 py-2' />
+								<input
+									required
+									type='email'
+									autoComplete='email'
+									value={email}
+									onChange={event => setEmail(event.target.value)}
+									className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
+								/>
 							</label>
-							<label className='grid gap-1 text-sm'>
+							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 								Password
 								<input
 									required
@@ -142,7 +157,7 @@ export default function AccountGate(): React.JSX.Element {
 									minLength={8}
 									value={password}
 									onChange={event => setPassword(event.target.value)}
-									className='rounded border border-secondary-5 bg-primary-1 px-3 py-2'
+									className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
 								/>
 							</label>
 							<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>

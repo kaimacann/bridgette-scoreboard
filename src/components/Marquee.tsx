@@ -1,8 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@utils';
 
-/** Content and motion settings for the seamless scoreboard marquee. */
-type MarqueeProps = {
+/**
+ * Renders a repeating, screen-reader-friendly marquee for three strikes.
+ *
+ * @param props - Optional repeated terms or custom children plus motion, row, and accessibility settings for the marquee.
+ * @returns The measured marquee viewport and its duplicated animated content.
+ */
+export default function Marquee({
+	terms = [],
+	children,
+	className,
+	duration = 20_000,
+	reverse = false,
+	'aria-hidden': ariaHidden = false,
+}: {
 	terms?: string[];
 	children?: React.ReactNode;
 	className?: string;
@@ -11,15 +23,7 @@ type MarqueeProps = {
 	pauseOnClick?: boolean;
 	rows?: number;
 	'aria-hidden'?: boolean;
-};
-
-/**
- * Renders a repeating, screen-reader-friendly marquee for three strikes.
- *
- * @param props - Optional repeated terms or custom children plus motion, row, and accessibility settings for the marquee.
- * @returns The measured marquee viewport and its duplicated animated content.
- */
-export default function Marquee({ terms = [], children, className, duration = 20_000, reverse = false, 'aria-hidden': ariaHidden = false }: MarqueeProps) {
+}) {
 	const content = children ?? terms.join('　　');
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const sampleRef = useRef<HTMLSpanElement>(null);
