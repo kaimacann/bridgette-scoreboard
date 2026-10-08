@@ -1,22 +1,23 @@
 import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
 import astro from 'eslint-plugin-astro';
+import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
+import ts from 'typescript-eslint';
 
 export default [
-	{ ignores: ['dist/**', '.astro/**', 'node_modules/**'] },
+	{ ignores: ['dist/**', '.astro/**', '.netlify/**', 'node_modules/**'] },
 	js.configs.recommended,
+	...ts.configs.recommended,
 	...astro.configs['flat/recommended'],
 	{
-		files: ['**/*.{ts,tsx,js,jsx,mjs,cjs}'],
-		languageOptions: {
-			parser: tsParser,
-			parserOptions: { ecmaVersion: 'latest', sourceType: 'module', ecmaFeatures: { jsx: true } },
-			globals: { ...globals.browser, ...globals.node },
+		files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
+		languageOptions: { globals: { ...globals.browser, ...globals.node } },
+		plugins: { 'unused-imports': unusedImports },
+		rules: {
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': 'off',
+			'unused-imports/no-unused-imports': 'error',
+			'unused-imports/no-unused-vars': ['error', { vars: 'local', varsIgnorePattern: '^_', args: 'all', argsIgnorePattern: '^_', caughtErrors: 'all', caughtErrorsIgnorePattern: '^_' }],
 		},
-		plugins: { '@typescript-eslint': tsPlugin },
-		rules: { ...tsPlugin.configs.recommended.rules, 'no-undef': 'off' },
 	},
-	{ files: ['**/*.astro'], languageOptions: { globals: { ...globals.browser, ...globals.node } } },
 ];
