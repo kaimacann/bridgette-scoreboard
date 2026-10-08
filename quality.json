@@ -5,7 +5,7 @@
 	"aliases": { "@components/": "src/components/", "@lib/": "src/lib/", "@utils": "src/lib/utils" },
 	"tsconfig": "tsconfig.json",
 	"tools": { "eslint": "eslint", "knip": "knip", "prettier": "prettier", "tsc": "tsc" },
-	"autofix": { "document": false, "knip": false, "lint": false, "name": false },
+	"autofix": { "document": false, "knip": false, "lint": false, "name": true },
 	"documentation": { "required": { "exportedFunctions": true } },
 	"repeatedClasses": { "minimumCount": 3 },
 	"regexDedup": { "minimumCount": 2 }

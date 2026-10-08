@@ -6,7 +6,7 @@ import { toast } from 'sonner';
  * @param fallback User-facing message used when the error has no useful text.
  */
 export function notifyError(scope: string, cause: unknown, fallback: string): void {
-	const error = cause instanceof Error ? cause : new Error(String(cause));
-	console.error(`[${scope}] ${error.message || fallback}`, error);
-	toast.error(error.message.trim() || fallback);
+	const err = cause instanceof Error ? cause : new Error(String(cause));
+	console.error(`[${scope}] ${err.message || fallback}`, err);
+	toast.error(err.message.trim() || fallback);
 }

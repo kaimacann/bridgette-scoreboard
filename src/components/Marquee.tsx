@@ -36,8 +36,8 @@ export default function Marquee({
 			if (viewportWidth === 0 || itemWidth === 0) return;
 
 			// Fill the visible viewport before duplicating the group for a seamless loop.
-			const nextCopies = Math.max(2, Math.ceil(viewportWidth / itemWidth) + 1);
-			setCopies(current => (current === nextCopies ? current : nextCopies));
+			const nCopies = Math.max(2, Math.ceil(viewportWidth / itemWidth) + 1);
+			setCopies(current => (current === nCopies ? current : nCopies));
 		};
 
 		measure();
@@ -49,8 +49,8 @@ export default function Marquee({
 
 	const renderGroup = (group: number) => (
 		<div className='marquee-group' key={group}>
-			{Array.from({ length: copies }, (_, index) => (
-				<React.Fragment key={index}>
+			{Array.from({ length: copies }, (_, i) => (
+				<React.Fragment key={i}>
 					<span className='marquee-item'>{content}</span>
 					<span className='marquee-gap' aria-hidden='true' />
 				</React.Fragment>

@@ -10,18 +10,18 @@ IMPORTS
 
 // API
 
-import { cn, hasWindow, isNumber, isRec, isString, toErrMsg } from '@utils';
-import { error as logError, errorLog } from '@utils';
+import { cn, isNumber, isRec, isString } from '@utils';
 import { useCallback, useEffect, useState } from 'react';
 
 // COMPONENTS
 
 import { ErrorBoundary } from '@components/ErrorBoundary';
 import Marquee from '@components/Marquee';
-import { Alert, AlertDescription, AlertError, AlertTitle } from '@ui/alert';
 import { Button } from '@ui/button';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@ui/select';
 import { CarbonIcon } from './carbon-icons';
+import { neonData } from '../lib/neon';
+import { notifyError } from '../lib/error-notifications';
 
 // DATA
 
@@ -29,7 +29,7 @@ import { IMG_DARKEN } from '@components/tile';
 
 // TYPES
 
-import type { BridgetteDashboardData, PitcherData } from '@lib/types';
+import type { PitcherData } from '@lib/types';
 
 /*//////////////////////////////////////////////////
 DATA
@@ -37,7 +37,22 @@ DATA
 
 const ACTION_ADD = '__add_pitcher__';
 const ACTION_DELETE = '__delete_pitcher__';
-const STORAGE_KEY = 'bridgette-dashboard';
+const COL_CLASSES: Record<1 | 2 | 3, string> = {
+	1: 'col-start-1',
+	2: 'col-start-2',
+	3: 'col-start-3',
+};
+const DEFAULT_PITCHERS: PitcherData[] = [
+	{ id: 'kai', name: 'Kai', strikes: 1 },
+	{ id: 'daniel', name: 'Daniel', strikes: 1 },
+];
+/** Neon Data API projection for an account-owned or shared scoreboard. */
+type DashboardRec = {
+	id: string;
+	owner_id: string;
+	title: string;
+	pitchers: PitcherData[];
+};
 
 /*//////////////////////////////////////////////////
 HELPERS
@@ -79,139 +94,115 @@ function coerce(v: unknown): PitcherData[] {
 		: [];
 }
 
-/**
- * Reads and parses pitcher scoreboard data from localStorage.
- *
- * @returns The parsed local scoreboard state or null if empty or malformed.
- */
-function readLocal(): {
-	pitchers: PitcherData[];
-	selectedId: string | null;
-} | null {
-	if (!hasWindow()) return null;
-	try {
-		const v = window.localStorage.getItem(STORAGE_KEY);
-		if (!v) return null;
-		const parsed = JSON.parse(v) as {
-			pitchers?: unknown;
-			selectedId?: unknown;
-		};
-		return {
-			pitchers: coerce({ pitchers: parsed.pitchers }),
-			selectedId: isString(parsed.selectedId) ? parsed.selectedId : null,
-		};
-	} catch (caught: unknown) {
-		const errInstance = caught instanceof Error ? caught : new Error(String(caught));
-		const payload = logError(errInstance, { storageKey: STORAGE_KEY });
-		errorLog('Scoreboard', 'Failed to parse localStorage scoreboard data', payload);
-		return null;
-	}
-}
-
-/**
- * Writes the current pitcher scoreboard data to localStorage.
- *
- * @param pitchers - The list of current pitchers.
- * @param selectedId - The currently selected pitcher's unique identifier.
- */
-function writeLocal(pitchers: PitcherData[], selectedId: string | null): void {
-	if (!hasWindow()) return;
-	try {
-		window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ pitchers, selectedId }));
-	} catch (caught: unknown) {
-		const errInstance = caught instanceof Error ? caught : new Error(String(caught));
-		const payload = logError(errInstance, { storageKey: STORAGE_KEY });
-		errorLog('Scoreboard', 'Failed to write localStorage scoreboard data', payload);
-	}
-}
-
 /*//////////////////////////////////////////////////
 COMPONENT
 //////////////////////////////////////////////////*/
 
 /**
- * Renders the internal scoreboard interactive content.
+ * Renders the account-scoped scoreboard and its strike and sharing controls.
+ *
+ * @param account - Signed-in account whose scoreboards are available here.
+ * @param signOut - Callback that ends the current account session.
  *
  * @returns A JSX element representing the scoreboard dashboard interface.
  */
-function ScoreboardContent(): React.JSX.Element {
+function ScoreboardContent({ account, signOut }: { account: { id: string; email: string }; signOut: () => Promise<void> }): React.JSX.Element {
 	// STATES
-	const [err, setErr] = useState<string | null>(null);
 	const [flash, setFlash] = useState(false);
 	const [pitchers, setPitchers] = useState<PitcherData[]>([]);
 	const [selId, setSelId] = useState<string | null>(null);
+	const [dashboards, setDashboards] = useState<DashboardRec[]>([]);
+	const [dashboardId, setDashboardId] = useState<string | null>(null);
+	const [strikeeEmail, setStrikeeEmail] = useState('');
+	const [shareMsg, setShareMsg] = useState<string | null>(null);
 	const selPitcher = pitchers.find(p => p.id === selId) ?? null;
 	const strikes = clamp(selPitcher?.strikes ?? 1);
+	const currDashboard = dashboards.find(board => board.id === dashboardId) ?? null;
 
 	// PROCESS
-	const req = useCallback(async <T,>(init?: RequestInit): Promise<T> => {
-		const headers = new Headers(init?.headers);
-		if (init?.method === 'PUT') {
-			let token = window.sessionStorage.getItem('bridgette-editor-token') ?? '';
-			if (!token) {
-				token = window.prompt('Enter the site editor key')?.trim() ?? '';
-				if (!token) throw new Error('Enter the site editor key to save changes.');
-				window.sessionStorage.setItem('bridgette-editor-token', token);
-			}
-			headers.set('Authorization', `Bearer ${token}`);
-		}
-		const res = await fetch('/api/bridgette', { ...init, headers });
-		const data = (await res.json()) as T & { error?: string };
-		if (!res.ok) {
-			if (res.status === 401 && init?.method === 'PUT') window.sessionStorage.removeItem('bridgette-editor-token');
-			throw new Error(isString(data.error) ? data.error : 'Request failed.');
-		}
-		return data;
-	}, []);
+	const req = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => neonData<T>(path, init), []);
 
 	const commit = useCallback((nPitchers: PitcherData[], nId?: string | null): void => {
 		const sel = (nId && nPitchers.some(p => p.id === nId) && nId) || nPitchers[0]?.id || null;
 		setPitchers(nPitchers);
 		setSelId(sel);
-		writeLocal(nPitchers, sel);
 	}, []);
 
 	const persist = useCallback(
 		async (nPitchers: PitcherData[]): Promise<void> => {
 			try {
-				await req<{ data: BridgetteDashboardData }>({
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ pitchers: nPitchers }),
+				if (!dashboardId) throw new Error('Choose a scoreboard before saving.');
+				await req<DashboardRec[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
+					method: 'PATCH',
+					headers: { Prefer: 'return=representation' },
+					body: JSON.stringify({
+						pitchers: nPitchers,
+						updated_at: new Date().toISOString(),
+					}),
 				});
-				setErr(null);
 			} catch (caught: unknown) {
-				const errInstance = caught instanceof Error ? caught : new Error(String(caught));
-				const payload = logError(errInstance, {
-					pitcherCount: nPitchers.length,
-				});
-				errorLog('Scoreboard', 'Failed to persist scoreboard to API', payload);
-				setErr(toErrMsg(caught, 'Failed to sync dashboard.'));
+				notifyError('Scoreboard save', caught, 'Failed to sync dashboard.');
 			}
 		},
-		[req],
+		[dashboardId, req],
+	);
+
+	const loadDashboards = useCallback(async (): Promise<void> => {
+		try {
+			let recs = await req<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers&order=created_at.asc');
+			if (!recs.length) {
+				recs = await req<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers', {
+					method: 'POST',
+					headers: { Prefer: 'return=representation' },
+					body: JSON.stringify({
+						title: 'Bridgette’s Strikes',
+						pitchers: DEFAULT_PITCHERS,
+					}),
+				});
+			}
+			const reqId = new URLSearchParams(window.location.search).get('board');
+			const selected = recs.find(board => board.id === reqId) ?? recs[0];
+			if (!selected) throw new Error('No scoreboard is available for this account.');
+			setDashboards(recs);
+			setDashboardId(selected.id);
+			setPitchers(coerce({ pitchers: selected.pitchers }));
+			setSelId(selected.pitchers[0]?.id ?? null);
+		} catch (caught: unknown) {
+			notifyError('Scoreboard load', caught, 'Failed to load account scoreboards.');
+		}
+	}, [req]);
+
+	const shareWithStrikee = useCallback(
+		async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
+			e.preventDefault();
+			if (!currDashboard || currDashboard.owner_id !== account.id) return;
+			setShareMsg(null);
+			try {
+				const email = strikeeEmail.trim().toLowerCase();
+				if (email === account.email.toLowerCase()) throw new Error('Choose the strikee’s email address.');
+				await req('scoreboard_shares', {
+					method: 'POST',
+					headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+					body: JSON.stringify({
+						scoreboard_id: currDashboard.id,
+						strikee_email: email,
+					}),
+				});
+				const shareUrl = new URL(`/?board=${encodeURIComponent(currDashboard.id)}`, window.location.origin).toString();
+				await navigator.clipboard?.writeText(shareUrl);
+				setShareMsg(`Shared with ${email}. The scoreboard link has been copied.`);
+				setStrikeeEmail('');
+			} catch (caught) {
+				notifyError('Scoreboard share', caught, 'Could not share this scoreboard.');
+			}
+		},
+		[account.email, account.id, currDashboard, req, strikeeEmail],
 	);
 
 	// EFFECTS
 	useEffect((): void => {
-		const local = readLocal();
-		if (local) commit(local.pitchers, local.selectedId);
-		void req<BridgetteDashboardData>()
-			.then(data => {
-				if (local) {
-					if (JSON.stringify(local.pitchers) !== JSON.stringify(data.pitchers)) void persist(local.pitchers);
-					return;
-				}
-				commit(data.pitchers);
-				setErr(null);
-			})
-			.catch((caught: unknown) => {
-				const errInstance = caught instanceof Error ? caught : new Error(String(caught));
-				const payload = logError(errInstance);
-				errorLog('Scoreboard', 'Failed to fetch scoreboard from API', payload);
-				setErr(toErrMsg(caught, 'Failed to load dashboard.'));
-			});
-	}, [commit, persist, req]);
+		void loadDashboards();
+	}, [loadDashboards]);
 
 	useEffect((): (() => void) | undefined => {
 		if (strikes !== 3) {
@@ -228,7 +219,7 @@ function ScoreboardContent(): React.JSX.Element {
 
 	// RENDER
 	return (
-		<div className='grid size-full grid-rows-[auto_3.5rem_1fr]'>
+		<main className='grid min-h-screen grid-rows-[auto_3.5rem_1fr] bg-primary-1'>
 			{/* HEADER */}
 			<section className='flex flex-col gap-4 bg-secondary-12 p-6 py-20 text-secondary-1 shadow md:flex-row md:items-end md:justify-between'>
 				{/* logo */}
@@ -237,10 +228,39 @@ function ScoreboardContent(): React.JSX.Element {
 						Bridgette&apos;s Strikes
 					</h1>
 					<p className='-mt-2 pl-2 text-xl'>Est. 2026</p>
+					<p className='mt-2 pl-2 text-sm text-secondary-2'>{account.email}</p>
+					<button type='button' className='mt-1 pl-2 text-left text-xs underline text-secondary-2' onClick={() => void signOut()}>
+						Sign out
+					</button>
 				</div>
 				{/* pitcher */}
 				<div className='w-full md:w-56'>
 					<p className='mb-2 font-mono text-2xl'>PITCHER</p>
+					{dashboards.length > 1 && (
+						<label className='mb-2 grid gap-1 text-xs text-secondary-2'>
+							SCOREBOARD
+							<select
+								aria-label='Select scoreboard'
+								value={dashboardId ?? ''}
+								onChange={e => {
+									const nBoard = dashboards.find(board => board.id === e.target.value);
+									if (!nBoard) return;
+									setDashboardId(nBoard.id);
+									setPitchers(coerce({ pitchers: nBoard.pitchers }));
+									setSelId(nBoard.pitchers[0]?.id ?? null);
+									window.history.replaceState(null, '', `/?board=${encodeURIComponent(nBoard.id)}`);
+								}}
+								className='rounded border border-secondary-5 bg-secondary-11 px-2 py-2 text-secondary-1'
+							>
+								{dashboards.map(board => (
+									<option key={board.id} value={board.id}>
+										{board.title}
+										{board.owner_id === account.id ? ' · creator' : ' · shared'}
+									</option>
+								))}
+							</select>
+						</label>
+					)}
 					<Select
 						size='xl'
 						onValueChange={v => {
@@ -274,13 +294,31 @@ function ScoreboardContent(): React.JSX.Element {
 							<SelectItem disabled={!selPitcher} value={ACTION_DELETE}>{selPitcher ? `Delete ${selPitcher.name}` : 'Delete pitcher'}</SelectItem>
 						</SelectContent>
 					</Select>
-					<p className='mt-2 text-xs text-secondary-2/80'>Saving changes requires the site editor key.</p>
-					{err && (
-						<Alert variant='destructive' className='mb-0 mt-3'>
-							<AlertTitle>Dashboard unavailable</AlertTitle>
-							<AlertDescription>{err}</AlertDescription>
-						</Alert>
+					{currDashboard?.owner_id === account.id && (
+						<form onSubmit={e => void shareWithStrikee(e)} className='mt-3 grid gap-2'>
+							<label className='grid gap-1 text-xs text-secondary-2' htmlFor='strikee-email'>
+								Share with a strikee
+							</label>
+							<input
+								id='strikee-email'
+								type='email'
+								required
+								placeholder='strikee@example.com'
+								value={strikeeEmail}
+								onChange={e => setStrikeeEmail(e.target.value)}
+								className='rounded border border-secondary-5 bg-secondary-11 px-3 py-2 text-sm text-secondary-1 placeholder:text-secondary-3'
+							/>
+							<button type='submit' className='rounded border border-secondary-5 px-3 py-2 text-sm text-secondary-1 hover:bg-secondary-11'>
+								Share scoreboard link
+							</button>
+							{shareMsg && (
+								<p role='status' className='text-xs text-secondary-2'>
+									{shareMsg}
+								</p>
+							)}
+						</form>
 					)}
+					{currDashboard?.owner_id !== account.id && <p className='mt-2 text-xs text-secondary-2/80'>Shared with you by the creator.</p>}
 				</div>
 				{/* strikes*/}
 				<div className='grid gap-x-2'>
@@ -329,18 +367,7 @@ function ScoreboardContent(): React.JSX.Element {
 
 			{/* IMAGES */}
 			<section className='row-start-3 mt-3 grid h-40 min-h-0 grid-cols-[auto_1fr_1fr_auto] items-stretch bg-primary-1 pr-6'>
-				<div
-					className={cn(
-						'row-start-1 flex h-full items-end justify-end',
-						(
-							{
-								1: 'col-start-1',
-								2: 'col-start-2',
-								3: 'col-start-3',
-							} as Record<1 | 2 | 3, string>
-						)[strikes],
-					)}
-				>
+				<div className={cn('row-start-1 flex h-full items-end justify-end', COL_CLASSES[strikes])}>
 					<img
 						src={strikes === 3 && flash ? '/images/bridgette/baseball-2.png' : '/images/bridgette/baseball-1.png'}
 						alt='Illustration of Bridgette batting'
@@ -351,24 +378,20 @@ function ScoreboardContent(): React.JSX.Element {
 					<img src='/images/bridgette/pitcher-2.png' alt='Illustration of the pitcher' className={cn('h-96 w-auto max-w-full object-contain', IMG_DARKEN)} />
 				</div>
 			</section>
-		</div>
+		</main>
 	);
 }
 
 /**
  * Renders the Bridgette controls and image board.
  *
+ * @param props Signed-in account details and the sign-out callback.
  * @returns A JSX element representing the strike tracker wrapped in an ErrorBoundary.
  */
-export default function Scoreboard(): React.JSX.Element {
+export default function Scoreboard({ account, signOut }: { account: { id: string; email: string }; signOut: () => Promise<void> }): React.JSX.Element {
 	return (
-		<ErrorBoundary
-			name='Scoreboard'
-			fallback={() => (
-				<AlertError title='Scoreboard Crashed' description='An unexpected rendering error occurred in the Bridgette strike tracker. The rest of the workspace remains fully functional.' />
-			)}
-		>
-			<ScoreboardContent />
+		<ErrorBoundary name='Scoreboard'>
+			<ScoreboardContent account={account} signOut={signOut} />
 		</ErrorBoundary>
 	);
 }

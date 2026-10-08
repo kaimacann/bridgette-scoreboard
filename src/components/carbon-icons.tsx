@@ -26,7 +26,11 @@ const ICON_PATHS = {
 	],
 } as const;
 
-/** Renders a Carbon Design System icon from the extracted dashboard icon set. */
+/**
+ * Renders a Carbon Design System icon from the extracted dashboard icon set.
+ * @param props SVG attributes and the icon name to render.
+ * @returns The requested SVG icon.
+ */
 export function CarbonIcon({
 	name,
 	...props
@@ -36,8 +40,8 @@ export function CarbonIcon({
 	return (
 		<svg viewBox='0 0 32 32' aria-hidden='true' focusable='false' {...props}>
 			<g fill='currentColor'>
-				{ICON_PATHS[name].map((d, index) => (
-					<path d={d} key={index} />
+				{ICON_PATHS[name].map((d, i) => (
+					<path d={d} key={i} />
 				))}
 			</g>
 		</svg>

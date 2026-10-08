@@ -53,16 +53,16 @@ export default function AccountGate(): React.JSX.Element {
 	/**
 	 * Sends account credentials to Neon Auth and loads the resulting session.
 	 *
-	 * @param event - Browser form submission whose default navigation is prevented while authentication runs.
+	 * @param e - Browser form submission whose default navigation is prevented while authentication runs.
 	 */
-	async function submit(event: SubmitEvent<HTMLFormElement>): Promise<void> {
-		event.preventDefault();
+	async function submit(e: SubmitEvent<HTMLFormElement>): Promise<void> {
+		e.preventDefault();
 		setBusy(true);
 		try {
 			await neonAuth(signup ? 'sign-up/email' : 'sign-in/email', signup ? { name: name.trim(), email: email.trim(), password } : { email: email.trim(), password });
-			const current = await getNeonSession();
-			if (!current) throw new Error('Sign-in succeeded but the account session could not be loaded. Check the trusted domain in Neon Auth.');
-			setSession(current);
+			const curr = await getNeonSession();
+			if (!curr) throw new Error('Sign-in succeeded but the account session could not be loaded. Check the trusted domain in Neon Auth.');
+			setSession(curr);
 		} catch (caught) {
 			notifyError('Account sign-in', caught, 'Account request failed.');
 		} finally {
@@ -130,23 +130,16 @@ export default function AccountGate(): React.JSX.Element {
 							Connect Neon Auth and the Data API to enable account sign-in.
 						</p>
 					) : (
-						<form className='grid gap-4' onSubmit={event => void submit(event)}>
+						<form className='grid gap-4' onSubmit={e => void submit(e)}>
 							{signup && (
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Name
-									<input required autoComplete='name' value={name} onChange={event => setName(event.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
+									<input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
 								</label>
 							)}
 							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 								Email
-								<input
-									required
-									type='email'
-									autoComplete='email'
-									value={email}
-									onChange={event => setEmail(event.target.value)}
-									className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
-								/>
+								<input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
 							</label>
 							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 								Password
@@ -156,7 +149,7 @@ export default function AccountGate(): React.JSX.Element {
 									autoComplete={signup ? 'new-password' : 'current-password'}
 									minLength={8}
 									value={password}
-									onChange={event => setPassword(event.target.value)}
+									onChange={e => setPassword(e.target.value)}
 									className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
 								/>
 							</label>
