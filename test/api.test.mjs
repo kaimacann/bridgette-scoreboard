@@ -37,7 +37,7 @@ test('unauthenticated Data API roles have no scoreboard access', () => {
 test('browser exchanges a Neon Auth session for a short-lived Data API JWT', () => {
 	assert.match(client, /credentials: 'include'/);
 	assert.match(client, /'token'/);
-	assert.match(client, /Authorization', `Bearer \$\{token\}`/);
+	assert.match(client, /Authorization', `Bearer \$\{sessionToken\.token \?\? sessionToken\.accessToken\}`/);
 	assert.match(gate, /sign-in\/email/);
 	assert.match(gate, /sign-up\/email/);
 	assert.doesNotMatch(gate, /prompt\(|editor key/i);

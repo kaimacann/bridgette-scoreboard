@@ -6,6 +6,7 @@
 	"tsconfig": "tsconfig.json",
 	"tools": { "eslint": "eslint", "knip": "knip", "prettier": "prettier", "tsc": "tsc" },
 	"autofix": { "document": false, "knip": false, "lint": false, "name": true },
+	"singleUse": { "skippedDirectories": ["src/components", "src/lib/neon.ts"] },
 	"documentation": { "required": { "exportedFunctions": true } },
 	"repeatedClasses": { "minimumCount": 3 },
 	"regexDedup": { "minimumCount": 2 }

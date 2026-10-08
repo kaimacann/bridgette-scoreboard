@@ -40,17 +40,6 @@ export async function getNeonSession(): Promise<AuthSession | null> {
 	return session?.user?.id && session.user.email ? session : null;
 }
 
-/**
- * Retrieves the short-lived bearer token for Neon Data API requests.
- * @returns The token used to authorize a Data API request.
- */
-export async function getNeonJwt(): Promise<string> {
-	const res = await neonAuth<{ token?: string; accessToken?: string }>('token');
-	const token = res.token ?? res.accessToken;
-	if (!token) throw new Error('The account session could not access the scoreboard database.');
-	return token;
-}
-
 /** Sends an authenticated request to the configured Neon Data API.
  * @param path Resource path relative to the configured data API.
  * @param init Optional fetch settings such as the method, headers, and request body.
@@ -58,9 +47,12 @@ export async function getNeonJwt(): Promise<string> {
  */
 export async function neonData<T>(path: string, init: RequestInit = {}): Promise<T> {
 	if (!dataApiUrl) throw new Error('The scoreboard database is not configured for this site.');
-	const token = await getNeonJwt();
+	const sessionToken = await neonAuth<{ token?: string; accessToken?: string }>('token');
+	if (!sessionToken.token && !sessionToken.accessToken) {
+		throw new Error('The account session could not access the scoreboard database.');
+	}
 	const headers = new Headers(init.headers);
-	headers.set('Authorization', `Bearer ${token}`);
+	headers.set('Authorization', `Bearer ${sessionToken.token ?? sessionToken.accessToken}`);
 	headers.set('Accept', 'application/json');
 	if (init.body) headers.set('Content-Type', 'application/json');
 	const res = await fetch(`${dataApiUrl}/${path.replace(SHARED_REGEX, '')}`, { ...init, headers });

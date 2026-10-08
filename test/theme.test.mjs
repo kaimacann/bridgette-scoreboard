@@ -17,8 +17,7 @@ function token(name) {
 }
 
 function luminance(rgb) {
-	const channels = rgb.map(channel => channel / 255);
-	const linear = channels.map(v => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+	const linear = rgb.map(channel => (channel / 255 <= 0.04045 ? channel / 255 / 12.92 : ((channel / 255 + 0.055) / 1.055) ** 2.4));
 	return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
 }
 
@@ -51,8 +50,7 @@ test('primary and burgundy surfaces retain readable text contrast', () => {
 test('Playball is loaded locally and used by the scoreboard title', async () => {
 	assert.match(css, /font-family:\s*'Playball'/);
 	assert.match(scoreboard, /fontFamily:\s*'"Playball", cursive'/);
-	const font = await readFile(new URL('../public/fonts/Playball-Regular.ttf', import.meta.url));
-	assert.ok(font.byteLength > 100_000);
+	assert.ok((await readFile(new URL('../public/fonts/Playball-Regular.ttf', import.meta.url))).byteLength > 100_000);
 	assert.match(await readFile(new URL('../public/fonts/Playball-OFL.txt', import.meta.url), 'utf8'), /SIL OPEN FONT LICENSE/i);
 });
 
