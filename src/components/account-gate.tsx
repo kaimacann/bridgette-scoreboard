@@ -121,7 +121,7 @@ export default function AccountGate(): React.JSX.Element {
 										className='border-secondary-5 bg-primary-1'
 									/>
 								</label>
-								<Button variant='account' size='lg' disabled={busy} className='px-4 py-3 disabled:opacity-60'>
+								<Button variant='account' size='lg' disabled={busy}>
 									{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
 								</Button>
 								<Button type='button' variant='underline' size='link' onClick={() => setSignup(!signup)}>

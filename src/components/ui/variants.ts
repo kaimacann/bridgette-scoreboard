@@ -6,6 +6,7 @@ export const BUTTON_VARIANTS = cva('inline-flex items-center justify-center gap-
 			default: 'bg-cyan-700 text-white hover:bg-cyan-800',
 			tonal: 'border border-cyan-800 bg-cyan-300 text-cyan-950',
 			secondary: 'border border-yellow-700 bg-yellow-300 text-yellow-950',
+			'tonal-secondary': 'border border-secondary-4 bg-secondary-1 text-secondary-12 hover:bg-secondary-2',
 			destructive: 'border border-rose-700 bg-rose-600 text-white',
 			outline: 'border border-gray-300 bg-transparent text-gray-900 hover:bg-rose-900',
 			ghost: 'hover:bg-gray-100',
