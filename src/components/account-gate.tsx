@@ -3,11 +3,12 @@ import { Toaster } from 'sonner';
 import { notifyError } from '../lib/error-notifications';
 import { getNeonSession, neonAuth, neonIsConfigured } from '../lib/neon';
 import Scoreboard from './scoreboard';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 /*//////////////////////////////////////////////////
 CLASSES
 //////////////////////////////////////////////////*/
 const GRID_GAP_1_TEXT_SM_CLASS = 'grid gap-1 text-sm';
-const ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS = 'rounded border border-secondary-5 bg-primary-1 px-3 py-2';
 
 /**
  * Shows sign-in or account creation before exposing the user's scoreboards.
@@ -101,31 +102,31 @@ export default function AccountGate(): React.JSX.Element {
 								{signup && (
 									<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 										Name
-										<input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
+										<Input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className='border-secondary-5 bg-primary-1' />
 									</label>
 								)}
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Email
-									<input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
+									<Input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className='border-secondary-5 bg-primary-1' />
 								</label>
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Password
-									<input
+									<Input
 										required
 										type='password'
 										autoComplete={signup ? 'new-password' : 'current-password'}
 										minLength={8}
 										value={password}
 										onChange={e => setPassword(e.target.value)}
-										className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
+										className='border-secondary-5 bg-primary-1'
 									/>
 								</label>
-								<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>
+								<Button variant='account' size='lg' disabled={busy} className='px-4 py-3 disabled:opacity-60'>
 									{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
-								</button>
-								<button type='button' className='text-sm underline' onClick={() => setSignup(!signup)}>
+								</Button>
+								<Button type='button' variant='underline' size='link' onClick={() => setSignup(!signup)}>
 									{signup ? 'Already have an account? Sign in' : 'Create an account'}
-								</button>
+								</Button>
 							</form>
 						)}
 					</section>

@@ -9,26 +9,23 @@ IMPORTS
 //////////////////////////////////////////////////*/
 
 // API
-
 import { cn, isNumber, isRec, isString } from '@utils';
 import { useCallback, useEffect, useState } from 'react';
 
 // COMPONENTS
-
 import { ErrorBoundary } from '@components/ErrorBoundary';
 import Marquee from '@components/Marquee';
 import { Button } from '@ui/button';
+import { Input } from '@ui/input';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@ui/select';
 import { CarbonIcon } from './carbon-icons';
 import { neonData } from '../lib/neon';
 import { notifyError } from '../lib/error-notifications';
 
 // DATA
-
 import { IMG_DARKEN } from '@components/tile';
 
 // TYPES
-
 import type { PitcherData } from '@lib/types';
 
 /*//////////////////////////////////////////////////
@@ -81,15 +78,8 @@ function coerce(v: unknown): PitcherData[] {
 		? v.pitchers.flatMap((p: unknown): PitcherData[] => {
 				if (!isRec(p) || !isString(p.id) || !isString(p.name)) return [];
 				const name = p.name.trim();
-				return name
-					? [
-							{
-								id: p.id,
-								name,
-								strikes: clamp(isNumber(p.strikes) ? p.strikes : 1),
-							},
-						]
-					: [];
+				// prettier-ignore
+        return name ? [{ id: p.id, name, strikes: clamp(isNumber(p.strikes) ? p.strikes : 1) }] : [];
 			})
 		: [];
 }
@@ -121,7 +111,6 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 
 	// PROCESS
 	const req = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => neonData<T>(path, init), []);
-
 	const commit = useCallback((nPitchers: PitcherData[], nId?: string | null): void => {
 		const sel = (nId && nPitchers.some(p => p.id === nId) && nId) || nPitchers[0]?.id || null;
 		setPitchers(nPitchers);
@@ -135,10 +124,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				await req<DashboardRec[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
 					method: 'PATCH',
 					headers: { Prefer: 'return=representation' },
-					body: JSON.stringify({
-						pitchers: nPitchers,
-						updated_at: new Date().toISOString(),
-					}),
+					body: JSON.stringify({pitchers: nPitchers,updated_at: new Date().toISOString()}),
 				});
 			} catch (caught: unknown) {
 				notifyError('Scoreboard save', caught, 'Failed to sync dashboard.');
@@ -235,9 +221,9 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 					</h1>
 					<p className='-mt-2 pl-2 text-xl'>Est. 2026</p>
 					<p className='mt-2 pl-2 text-sm text-secondary-2'>{account.email}</p>
-					<button type='button' className='mt-1 pl-2 text-left text-xs underline text-secondary-2' onClick={() => void signOut()}>
+					<Button type='button' variant='underline' size='link' className='mt-1 pl-2 text-left text-xs text-secondary-2' onClick={() => void signOut()}>
 						Sign out
-					</button>
+					</Button>
 				</div>
 				{/* pitcher */}
 				<div className='w-full md:w-56'>
@@ -245,26 +231,29 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 					{dashboards.length > 1 && (
 						<label className='mb-2 grid gap-1 text-xs text-secondary-2'>
 							SCOREBOARD
-							<select
-								aria-label='Select scoreboard'
+							<Select
 								value={dashboardId ?? ''}
-								onChange={e => {
-									const nBoard = dashboards.find(board => board.id === e.target.value);
+								onValueChange={value => {
+									const nBoard = dashboards.find(board => board.id === value);
 									if (!nBoard) return;
 									setDashboardId(nBoard.id);
 									setPitchers(coerce({ pitchers: nBoard.pitchers }));
 									setSelId(nBoard.pitchers[0]?.id ?? null);
 									window.history.replaceState(null, '', `/?board=${encodeURIComponent(nBoard.id)}`);
 								}}
-								className='rounded border border-secondary-5 bg-secondary-11 px-2 py-2 text-secondary-1'
 							>
-								{dashboards.map(board => (
-									<option key={board.id} value={board.id}>
-										{board.title}
-										{board.owner_id === account.id ? ' · creator' : ' · shared'}
-									</option>
-								))}
-							</select>
+								<SelectTrigger className='w-full border-secondary-5 bg-secondary-11 px-2 py-2 text-secondary-1' aria-label='Select scoreboard'>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent className='border-secondary-5 bg-secondary-11 text-secondary-1'>
+									{dashboards.map(board => (
+										<SelectItem key={board.id} value={board.id}>
+											{board.title}
+											{board.owner_id === account.id ? ' · creator' : ' · shared'}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</label>
 					)}
 					<Select
@@ -305,18 +294,18 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 							<label className='grid gap-1 text-xs text-secondary-2' htmlFor='strikee-email'>
 								Share with a strikee
 							</label>
-							<input
+							<Input
 								id='strikee-email'
 								type='email'
 								required
 								placeholder='strikee@example.com'
 								value={strikeeEmail}
 								onChange={e => setStrikeeEmail(e.target.value)}
-								className='rounded border border-secondary-5 bg-secondary-11 px-3 py-2 text-sm text-secondary-1 placeholder:text-secondary-3'
+								className='border-secondary-5 bg-secondary-11 text-sm text-secondary-1 placeholder:text-secondary-3'
 							/>
-							<button type='submit' className='rounded border border-secondary-5 px-3 py-2 text-sm text-secondary-1 hover:bg-secondary-11'>
+							<Button type='submit' variant='outline' className='border-secondary-5 px-3 py-2 text-sm text-secondary-1 hover:bg-secondary-11'>
 								Share scoreboard link
-							</button>
+							</Button>
 							{shareMsg && (
 								<p role='status' className='text-xs text-secondary-2'>
 									{shareMsg}
