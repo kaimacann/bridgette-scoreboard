@@ -44,6 +44,12 @@ const applyOpacityValue = (variable: string) => {
 	};
 };
 
+const colorScale = (name: string, includeLegacy = false): Record<number, ReturnType<typeof applyOpacityValue>> =>
+	Object.fromEntries([
+		...(includeLegacy ? [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map(n => [n, applyOpacityValue(`--${name}${n}`)] as const) : []),
+		...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => [n, applyOpacityValue(`--${name}-${n}`)] as const),
+	]);
+
 const transform =
 	'translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) ';
 
@@ -95,21 +101,9 @@ const preset: Omit<Config, 'content'> = {
 			},
 			borderRadius: { 100: '100%' },
 			colors: {
-				primary: (() => {
-					const legacy = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
-					const scale = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-					return Object.fromEntries([...legacy.map(n => [n, applyOpacityValue(`--primary${n}`)]), ...scale.map(n => [n, applyOpacityValue(`--primary-${n}`)])] as (
-						number | ReturnType<typeof applyOpacityValue>
-					)[][]) as Record<number, ReturnType<typeof applyOpacityValue>>;
-				})(),
-				gray: Object.fromEntries([...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => [n, applyOpacityValue(`--gray-${n}`)])]) as Record<number, ReturnType<typeof applyOpacityValue>>,
-				secondary: (() => {
-					const legacy = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
-					const scale = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
-					return Object.fromEntries([...legacy.map(n => [n, applyOpacityValue(`--secondary${n}`)]), ...scale.map(n => [n, applyOpacityValue(`--secondary-${n}`)])] as (
-						number | ReturnType<typeof applyOpacityValue>
-					)[][]) as Record<number, ReturnType<typeof applyOpacityValue>>;
-				})(),
+				primary: colorScale('primary', true),
+				gray: colorScale('gray'),
+				secondary: colorScale('secondary', true),
 				accent: applyOpacityValue('--accent'),
 				'accent-foreground': applyOpacityValue('--accent-foreground'),
 				ring: applyOpacityValue('--ring'),
