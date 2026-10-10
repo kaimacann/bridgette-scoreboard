@@ -20,8 +20,6 @@ export default function Marquee({
 	className?: string;
 	duration?: number;
 	reverse?: boolean;
-	pauseOnClick?: boolean;
-	rows?: number;
 	'aria-hidden'?: boolean;
 }) {
 	const content = children ?? terms.join('　　');

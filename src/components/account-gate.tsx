@@ -80,46 +80,13 @@ export default function AccountGate(): React.JSX.Element {
 		}
 	}
 
-	if (checking)
-		return (
-			<>
-				<Toaster
-					position='top-right'
-					richColors
-					toastOptions={{
-						duration: 8000,
-						classNames: { error: 'toast-error-saturated' },
-					}}
-				/>
-				<div className='grid min-h-screen place-items-center bg-primary-1 text-primary-12'>Loading account…</div>
-			</>
-		);
-	if (session)
-		return (
-			<>
-				<Toaster
-					position='top-right'
-					richColors
-					toastOptions={{
-						duration: 8000,
-						classNames: { error: 'toast-error-saturated' },
-					}}
-				/>
-				<Scoreboard account={{ id: session.user.id, email: session.user.email }} signOut={signOut} />
-			</>
-		);
-
 	return (
 		<>
-			<Toaster
-				position='top-right'
-				richColors
-				toastOptions={{
-					duration: 8000,
-					classNames: { error: 'toast-error-saturated' },
-				}}
-			/>
-			<main className='grid min-h-screen place-items-center bg-primary-1 p-6 text-primary-12'>
+			<Toaster position='top-right' richColors toastOptions={{ duration: 8000, classNames: { error: 'toast-error-saturated' } }} />
+			{checking && <div className='grid min-h-screen place-items-center bg-primary-1 text-primary-12'>Loading account…</div>}
+			{!checking && session && <Scoreboard account={{ id: session.user.id, email: session.user.email }} signOut={signOut} />}
+			{!checking && !session && (
+				<main className='grid min-h-screen place-items-center bg-primary-1 p-6 text-primary-12'>
 				<section className='w-full max-w-md rounded-lg border border-secondary-5 bg-primary-2 p-8 shadow-sm'>
 					<h1 className='mb-2 text-3xl' style={{ fontFamily: '"Playball", cursive' }}>
 						Bridgette&apos;s Strikes
@@ -162,7 +129,8 @@ export default function AccountGate(): React.JSX.Element {
 						</form>
 					)}
 				</section>
-			</main>
+				</main>
+			)}
 		</>
 	);
 }

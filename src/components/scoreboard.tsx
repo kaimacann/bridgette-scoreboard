@@ -146,6 +146,12 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 		},
 		[dashboardId, req],
 	);
+	const changeStrikes = (amount: -1 | 1): void => {
+		if (!selPitcher) return;
+		const next = pitchers.map(p => (p.id === selPitcher.id ? { ...p, strikes: clamp(strikes + amount) } : p));
+		commit(next, selPitcher.id);
+		void persist(next);
+	};
 
 	const loadDashboards = useCallback(async (): Promise<void> => {
 		try {
@@ -329,12 +335,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 						className='size-14 border-secondary-4 bg-secondary-1 text-secondary-12 hover:bg-secondary-2'
 						aria-label='Decrease strike count'
 						disabled={!selPitcher || strikes === 1}
-						onClick={(): void => {
-							if (!selPitcher) return;
-							const n = pitchers.map(p => (p.id === selPitcher.id ? { ...p, strikes: clamp(strikes - 1) } : p));
-							commit(n, selPitcher.id);
-							void persist(n);
-						}}
+						onClick={() => changeStrikes(-1)}
 					>
 						<CarbonIcon name='subtract' className='text-3xl' />
 					</Button>
@@ -345,12 +346,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 						className='size-14 border-secondary-4 bg-secondary-1 text-secondary-12 hover:bg-secondary-2'
 						aria-label='Increase strike count'
 						disabled={!selPitcher || strikes === 3}
-						onClick={(): void => {
-							if (!selPitcher) return;
-							const n = pitchers.map(p => (p.id === selPitcher.id ? { ...p, strikes: clamp(strikes + 1) } : p));
-							commit(n, selPitcher.id);
-							void persist(n);
-						}}
+						onClick={() => changeStrikes(1)}
 					>
 						<CarbonIcon name='add' className='text-3xl' />
 					</Button>
@@ -362,7 +358,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				className={cn('flex items-center overflow-hidden border-double border-secondary-8 bg-primary-1 transition-opacity duration-75', strikes === 3 ? 'h-full border-y-[6px]' : 'h-0 border-t-[6px]')}
 				aria-hidden={strikes !== 3}
 			>
-				<Marquee terms={["YOU'RE OUT"]} pauseOnClick={false} duration={20000} reverse rows={1} className='!mb-0 font-thin leading-none text-secondary-12' />
+				<Marquee terms={["YOU'RE OUT"]} duration={20000} reverse className='!mb-0 font-thin leading-none text-secondary-12' />
 			</div>
 
 			{/* IMAGES */}

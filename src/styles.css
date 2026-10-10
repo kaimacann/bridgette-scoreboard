@@ -95,9 +95,6 @@
 	::selection {
 		@apply bg-primary-6/40;
 	}
-	:root {
-		--radius: 0.5rem;
-	}
 }
 
 @layer components {

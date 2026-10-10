@@ -187,12 +187,7 @@ const preset: Omit<Config, 'content'> = {
 							textDecoration: 'underline',
 							textUnderlineOffset: '3px',
 						},
-						h1: { color: 'inherit' },
-						h2: { color: 'inherit' },
-						h3: { color: 'inherit' },
-						h4: { color: 'inherit' },
-						h5: { color: 'inherit' },
-						h6: { color: 'inherit' },
+						'h1, h2, h3, h4, h5, h6': { color: 'inherit' },
 						'a:hover': { textUnderlineOffset: '3px' },
 						// set color with opacity
 						blockquote: { color: 'var(--primary-7)', borderLeftColor: 'rgba(var(--primary-7), 0.5)' },
