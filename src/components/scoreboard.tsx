@@ -79,7 +79,7 @@ function coerce(v: unknown): PitcherData[] {
 				if (!isRec(p) || !isString(p.id) || !isString(p.name)) return [];
 				const name = p.name.trim();
 				// prettier-ignore
-        return name ? [{ id: p.id, name, strikes: clamp(isNumber(p.strikes) ? p.strikes : 1) }] : [];
+				return name ? [{ id: p.id, name, strikes: clamp(isNumber(p.strikes) ? p.strikes : 1) }] : [];
 			})
 		: [];
 }
@@ -124,7 +124,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				await req<DashboardRec[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
 					method: 'PATCH',
 					headers: { Prefer: 'return=representation' },
-					body: JSON.stringify({pitchers: nPitchers,updated_at: new Date().toISOString()}),
+					body: JSON.stringify({ pitchers: nPitchers, updated_at: new Date().toISOString() }),
 				});
 			} catch (caught: unknown) {
 				notifyError('Scoreboard save', caught, 'Failed to sync dashboard.');
@@ -146,10 +146,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				recs = await req<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers', {
 					method: 'POST',
 					headers: { Prefer: 'return=representation' },
-					body: JSON.stringify({
-						title: 'Bridgette’s Strikes',
-						pitchers: DEFAULT_PITCHERS,
-					}),
+					body: JSON.stringify({ title: 'Bridgette’s Strikes', pitchers: DEFAULT_PITCHERS }),
 				});
 			}
 			const reqId = new URLSearchParams(window.location.search).get('board');
@@ -175,10 +172,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				await req('scoreboard_shares', {
 					method: 'POST',
 					headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-					body: JSON.stringify({
-						scoreboard_id: currDashboard.id,
-						strikee_email: email,
-					}),
+					body: JSON.stringify({ scoreboard_id: currDashboard.id, strikee_email: email }),
 				});
 				const shareUrl = new URL(`/?board=${encodeURIComponent(currDashboard.id)}`, window.location.origin).toString();
 				await navigator.clipboard?.writeText(shareUrl);
@@ -195,7 +189,6 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 	useEffect((): void => {
 		void loadDashboards();
 	}, [loadDashboards]);
-
 	useEffect((): (() => void) | undefined => {
 		if (strikes !== 3) {
 			setFlash(false);
@@ -221,7 +214,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 					</h1>
 					<p className='-mt-2 pl-2 text-xl'>Est. 2026</p>
 					<p className='mt-2 pl-2 text-sm text-secondary-2'>{account.email}</p>
-					<Button type='button' variant='underline' size='link' className='mt-1 pl-2 text-left text-xs text-secondary-2' onClick={() => void signOut()}>
+					<Button type='button' variant='primary-underline' size='link' className='mt-1 pl-2 text-left text-xs text-secondary-2' onClick={() => void signOut()}>
 						Sign out
 					</Button>
 				</div>
@@ -242,7 +235,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 									window.history.replaceState(null, '', `/?board=${encodeURIComponent(nBoard.id)}`);
 								}}
 							>
-								<SelectTrigger className='w-full border-secondary-5 bg-secondary-11 px-2 py-2 text-secondary-1' aria-label='Select scoreboard'>
+								<SelectTrigger className='border-secondary-5 bg-secondary-11 px-2 text-secondary-1' aria-label='Select scoreboard'>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent className='border-secondary-5 bg-secondary-11 text-secondary-1'>
@@ -257,7 +250,6 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 						</label>
 					)}
 					<Select
-						size='xl'
 						onValueChange={v => {
 							if (v === ACTION_ADD) {
 								const name = window.prompt('Pitcher name')?.trim();
@@ -278,7 +270,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 						}}
 						value={selId ?? undefined}
 					>
-						<SelectTrigger className='w-full border-secondary-5 bg-secondary-11 font-mono text-secondary-1 data-[placeholder]:text-secondary-2' aria-label='Select pitcher'>
+						<SelectTrigger className='border-secondary-5 bg-secondary-11 font-mono text-secondary-1 data-[placeholder]:text-secondary-2' aria-label='Select pitcher'>
 							<SelectValue placeholder='Select pitcher' />
 						</SelectTrigger>
 						{/* prettier-ignore */}
@@ -301,9 +293,9 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 								placeholder='strikee@example.com'
 								value={strikeeEmail}
 								onChange={e => setStrikeeEmail(e.target.value)}
-								className='border-secondary-5 bg-secondary-11 text-sm text-secondary-1 placeholder:text-secondary-3'
+								className='border-secondary-5 bg-secondary-11 text-secondary-1 placeholder:text-secondary-3'
 							/>
-							<Button type='submit' variant='outline' className='border-secondary-5 px-3 py-2 text-sm text-secondary-1 hover:bg-secondary-11'>
+							<Button type='submit' variant='primary-outline' className='border-secondary-5 px-3 text-secondary-1 hover:bg-secondary-11'>
 								Share scoreboard link
 							</Button>
 							{shareMsg && (
@@ -318,23 +310,11 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				{/* strikes*/}
 				<div className='grid gap-x-2'>
 					<p className='col-span-3 mb-2 font-mono text-2xl'>STRIKE</p>
-					<Button
-						variant='tonal-secondary'
-						size='xl'
-						aria-label='Decrease strike count'
-						disabled={!selPitcher || strikes === 1}
-						onClick={() => changeStrikes(-1)}
-					>
+					<Button variant='secondary-tonal' size='xl' aria-label='Decrease strike count' disabled={!selPitcher || strikes === 1} onClick={() => changeStrikes(-1)}>
 						<CarbonIcon name='subtract' className='text-3xl' />
 					</Button>
 					<p className='flex size-14 items-center justify-center rounded border border-secondary-4 bg-primary-12 font-mono text-2xl text-primary-1'>0{strikes}</p>
-					<Button
-						variant='tonal-secondary'
-						size='xl'
-						aria-label='Increase strike count'
-						disabled={!selPitcher || strikes === 3}
-						onClick={() => changeStrikes(1)}
-					>
+					<Button variant='secondary-tonal' size='xl' aria-label='Increase strike count' disabled={!selPitcher || strikes === 3} onClick={() => changeStrikes(1)}>
 						<CarbonIcon name='add' className='text-3xl' />
 					</Button>
 				</div>
