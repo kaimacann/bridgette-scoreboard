@@ -50,6 +50,14 @@ const colorScale = (name: string, includeLegacy = false): Record<number, ReturnT
 		...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => [n, applyOpacityValue(`--${name}-${n}`)] as const),
 	]);
 
+const rangeMap = (start: number, end: number, key: (n: number) => number | string, value: (n: number) => string) =>
+	Object.fromEntries(
+		Array.from({ length: end - start + 1 }, (_, i) => {
+			const n = start + i;
+			return [key(n), value(n)] as const;
+		}),
+	);
+
 const transform =
 	'translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) ';
 
@@ -119,40 +127,16 @@ const preset: Omit<Config, 'content'> = {
 			gridTemplateColumns: { 20: 'repeat(20, minmax(0, 1fr))' },
 			// Simple 20 row grid
 			gridTemplateRows: { 20: 'repeat(20, minmax(0, 1fr))' },
-			gridColumn: {
-				'span-13': 'span 13 / span 13',
-				'span-14': 'span 14 / span 14',
-				'span-15': 'span 15 / span 15',
-				'span-16': 'span 16 / span 16',
-				'span-17': 'span 17 / span 17',
-				'span-18': 'span 18 / span 18',
-				'span-19': 'span 19 / span 19',
-				'span-20': 'span 20 / span 20',
-			},
-			gridRow: {
-				'span-7': 'span 7 / span 7',
-				'span-8': 'span 8 / span 8',
-				'span-9': 'span 9 / span 9',
-				'span-10': 'span 10 / span 10',
-				'span-11': 'span 11 / span 11',
-				'span-12': 'span 12 / span 12',
-				'span-13': 'span 13 / span 13',
-				'span-14': 'span 14 / span 14',
-				'span-15': 'span 15 / span 15',
-				'span-16': 'span 16 / span 16',
-				'span-17': 'span 17 / span 17',
-				'span-18': 'span 18 / span 18',
-				'span-19': 'span 19 / span 19',
-				'span-20': 'span 20 / span 20',
-			},
+			gridColumn: rangeMap(13, 20, n => `span-${n}`, n => `span ${n} / span ${n}`),
+			gridRow: rangeMap(7, 20, n => `span-${n}`, n => `span ${n} / span ${n}`),
 			// prettier-ignore
-			gridColumnStart: {13:'13',14:'14',15:'15',16:'16',17:'17',18:'18',19:'19',20:'20',21:'21',},
+			gridColumnStart: rangeMap(13, 21, n => n, String),
 			// prettier-ignore
-			gridRowStart: {8:'8',9:'9',10:'10',11:'11',12:'12',13:'13',14:'14',15:'15',16:'16',17:'17',18:'18',19:'19',20:'20',21:'21',},
+			gridRowStart: rangeMap(8, 21, n => n, String),
 			// prettier-ignore
-			gridColumnEnd: {13:'13',14:'14',15:'15',16:'16',17:'17',18:'18',19:'19',20:'20',21:'21',},
+			gridColumnEnd: rangeMap(13, 21, n => n, String),
 			// prettier-ignore
-			gridRowEnd: { 8: '8', 9: '9', 10: '10', 11: '11', 12: '12', 13: '13', 14: '14', 15: '15', 16: '16', 17: '17', 18: '18', 19: '19', 20: '20', 21: '21' },
+			gridRowEnd: rangeMap(8, 21, n => n, String),
 			typography: ({ theme }: PluginUtils) => ({
 				DEFAULT: {
 					css: {
