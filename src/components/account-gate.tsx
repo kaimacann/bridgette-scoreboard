@@ -87,48 +87,48 @@ export default function AccountGate(): React.JSX.Element {
 			{!checking && session && <Scoreboard account={{ id: session.user.id, email: session.user.email }} signOut={signOut} />}
 			{!checking && !session && (
 				<main className='grid min-h-screen place-items-center bg-primary-1 p-6 text-primary-12'>
-				<section className='w-full max-w-md rounded-lg border border-secondary-5 bg-primary-2 p-8 shadow-sm'>
-					<h1 className='mb-2 text-3xl' style={{ fontFamily: '"Playball", cursive' }}>
-						Bridgette&apos;s Strikes
-					</h1>
-					<p className='mb-6 text-sm'>Sign in to keep your scoreboard with your account and share it with a strikee.</p>
-					{!neonIsConfigured ? (
-						<p role='status' className='rounded border border-secondary-6 bg-primary-1 p-4 text-sm'>
-							Connect Neon Auth and the Data API to enable account sign-in.
-						</p>
-					) : (
-						<form className='grid gap-4' onSubmit={e => void submit(e)}>
-							{signup && (
+					<section className='w-full max-w-md rounded-lg border border-secondary-5 bg-primary-2 p-8 shadow-sm'>
+						<h1 className='mb-2 text-3xl' style={{ fontFamily: '"Playball", cursive' }}>
+							Bridgette&apos;s Strikes
+						</h1>
+						<p className='mb-6 text-sm'>Sign in to keep your scoreboard with your account and share it with a strikee.</p>
+						{!neonIsConfigured ? (
+							<p role='status' className='rounded border border-secondary-6 bg-primary-1 p-4 text-sm'>
+								Connect Neon Auth and the Data API to enable account sign-in.
+							</p>
+						) : (
+							<form className='grid gap-4' onSubmit={e => void submit(e)}>
+								{signup && (
+									<label className={GRID_GAP_1_TEXT_SM_CLASS}>
+										Name
+										<input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
+									</label>
+								)}
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
-									Name
-									<input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
+									Email
+									<input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
 								</label>
-							)}
-							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
-								Email
-								<input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS} />
-							</label>
-							<label className={GRID_GAP_1_TEXT_SM_CLASS}>
-								Password
-								<input
-									required
-									type='password'
-									autoComplete={signup ? 'new-password' : 'current-password'}
-									minLength={8}
-									value={password}
-									onChange={e => setPassword(e.target.value)}
-									className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
-								/>
-							</label>
-							<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>
-								{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
-							</button>
-							<button type='button' className='text-sm underline' onClick={() => setSignup(!signup)}>
-								{signup ? 'Already have an account? Sign in' : 'Create an account'}
-							</button>
-						</form>
-					)}
-				</section>
+								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
+									Password
+									<input
+										required
+										type='password'
+										autoComplete={signup ? 'new-password' : 'current-password'}
+										minLength={8}
+										value={password}
+										onChange={e => setPassword(e.target.value)}
+										className={ROUNDED_BORDER_BORDER_SECONDARY_5_BG_PRIMARY_1_PX_3_PY_2_CLASS}
+									/>
+								</label>
+								<button disabled={busy} className='rounded bg-secondary-12 px-4 py-3 text-primary-1 disabled:opacity-60'>
+									{busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
+								</button>
+								<button type='button' className='text-sm underline' onClick={() => setSignup(!signup)}>
+									{signup ? 'Already have an account? Sign in' : 'Create an account'}
+								</button>
+							</form>
+						)}
+					</section>
 				</main>
 			)}
 		</>
