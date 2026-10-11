@@ -5,6 +5,8 @@ import { getNeonSession, neonAuth, neonIsConfigured } from '../lib/neon';
 import Scoreboard from './scoreboard';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+const BORDER_SECONDARY_5_BG_PRIMARY_1_CLASS = 'border-secondary-5 bg-primary-1';
+
 /*//////////////////////////////////////////////////
 CLASSES
 //////////////////////////////////////////////////*/
@@ -102,12 +104,12 @@ export default function AccountGate(): React.JSX.Element {
 								{signup && (
 									<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 										Name
-										<Input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className='border-secondary-5 bg-primary-1' />
+										<Input required autoComplete='name' value={name} onChange={e => setName(e.target.value)} className={BORDER_SECONDARY_5_BG_PRIMARY_1_CLASS} />
 									</label>
 								)}
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Email
-									<Input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className='border-secondary-5 bg-primary-1' />
+									<Input required type='email' autoComplete='email' value={email} onChange={e => setEmail(e.target.value)} className={BORDER_SECONDARY_5_BG_PRIMARY_1_CLASS} />
 								</label>
 								<label className={GRID_GAP_1_TEXT_SM_CLASS}>
 									Password
@@ -118,7 +120,7 @@ export default function AccountGate(): React.JSX.Element {
 										minLength={8}
 										value={password}
 										onChange={e => setPassword(e.target.value)}
-										className='border-secondary-5 bg-primary-1'
+										className={BORDER_SECONDARY_5_BG_PRIMARY_1_CLASS}
 									/>
 								</label>
 								<Button variant='secondary' size='lg' disabled={busy}>

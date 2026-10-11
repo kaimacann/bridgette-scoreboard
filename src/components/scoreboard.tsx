@@ -55,24 +55,12 @@ type DashboardRec = {
 HELPERS
 //////////////////////////////////////////////////*/
 
-/**
- * Clamps a numerical value to the range [1, 3].
- *
- * @param v - The numeric value to clamp.
- *
- * @returns The clamped value as 1, 2, or 3.
- */
+/** Bounds a strike count to the supported 1–3 range. */
 function clamp(v: number): 1 | 2 | 3 {
 	return Math.max(1, Math.min(3, Math.round(v))) as 1 | 2 | 3;
 }
 
-/**
- * Coerces an unknown value into an array of pitcher data.
- *
- * @param v - The raw input value.
- *
- * @returns An array of verified and cleaned PitcherData.
- */
+/** Filters an unknown API value down to valid pitcher records. */
 function coerce(v: unknown): PitcherData[] {
 	return isRec(v) && Array.isArray(v.pitchers)
 		? v.pitchers.flatMap((p: unknown): PitcherData[] => {
@@ -108,9 +96,6 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 	const selPitcher = pitchers.find(p => p.id === selId) ?? null;
 	const strikes = clamp(selPitcher?.strikes ?? 1);
 	const currDashboard = dashboards.find(board => board.id === dashboardId) ?? null;
-
-	// PROCESS
-	const req = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => neonData<T>(path, init), []);
 	const commit = useCallback((nPitchers: PitcherData[], nId?: string | null): void => {
 		const sel = (nId && nPitchers.some(p => p.id === nId) && nId) || nPitchers[0]?.id || null;
 		setPitchers(nPitchers);
@@ -121,7 +106,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 		async (nPitchers: PitcherData[]): Promise<void> => {
 			try {
 				if (!dashboardId) throw new Error('Choose a scoreboard before saving.');
-				await req<DashboardRec[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
+				await neonData<DashboardRec[]>(`scoreboards?id=eq.${encodeURIComponent(dashboardId)}`, {
 					method: 'PATCH',
 					headers: { Prefer: 'return=representation' },
 					body: JSON.stringify({ pitchers: nPitchers, updated_at: new Date().toISOString() }),
@@ -130,20 +115,20 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				notifyError('Scoreboard save', caught, 'Failed to sync dashboard.');
 			}
 		},
-		[dashboardId, req],
+		[dashboardId, neonData],
 	);
 	const changeStrikes = (amount: -1 | 1): void => {
 		if (!selPitcher) return;
-		const next = pitchers.map(p => (p.id === selPitcher.id ? { ...p, strikes: clamp(strikes + amount) } : p));
-		commit(next, selPitcher.id);
-		void persist(next);
+		const n = pitchers.map(p => (p.id === selPitcher.id ? { ...p, strikes: clamp(strikes + amount) } : p));
+		commit(n, selPitcher.id);
+		void persist(n);
 	};
 
 	const loadDashboards = useCallback(async (): Promise<void> => {
 		try {
-			let recs = await req<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers&order=created_at.asc');
+			let recs = await neonData<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers&order=created_at.asc');
 			if (!recs.length) {
-				recs = await req<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers', {
+				recs = await neonData<DashboardRec[]>('scoreboards?select=id,owner_id,title,pitchers', {
 					method: 'POST',
 					headers: { Prefer: 'return=representation' },
 					body: JSON.stringify({ title: 'Bridgette’s Strikes', pitchers: DEFAULT_PITCHERS }),
@@ -154,12 +139,12 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 			if (!selected) throw new Error('No scoreboard is available for this account.');
 			setDashboards(recs);
 			setDashboardId(selected.id);
-			setPitchers(coerce({ pitchers: selected.pitchers }));
+			setPitchers(coerce(selected));
 			setSelId(selected.pitchers[0]?.id ?? null);
 		} catch (caught: unknown) {
 			notifyError('Scoreboard load', caught, 'Failed to load account scoreboards.');
 		}
-	}, [req]);
+	}, [neonData]);
 
 	const shareWithStrikee = useCallback(
 		async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
@@ -169,7 +154,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 			try {
 				const email = strikeeEmail.trim().toLowerCase();
 				if (email === account.email.toLowerCase()) throw new Error('Choose the strikee’s email address.');
-				await req('scoreboard_shares', {
+				await neonData('scoreboard_shares', {
 					method: 'POST',
 					headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
 					body: JSON.stringify({ scoreboard_id: currDashboard.id, strikee_email: email }),
@@ -182,7 +167,7 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 				notifyError('Scoreboard share', caught, 'Could not share this scoreboard.');
 			}
 		},
-		[account.email, account.id, currDashboard, req, strikeeEmail],
+		[account.email, account.id, currDashboard, neonData, strikeeEmail],
 	);
 
 	// EFFECTS
@@ -226,11 +211,11 @@ function ScoreboardContent({ account, signOut }: { account: { id: string; email:
 							SCOREBOARD
 							<Select
 								value={dashboardId ?? ''}
-								onValueChange={value => {
-									const nBoard = dashboards.find(board => board.id === value);
+								onValueChange={v => {
+									const nBoard = dashboards.find(board => board.id === v);
 									if (!nBoard) return;
 									setDashboardId(nBoard.id);
-									setPitchers(coerce({ pitchers: nBoard.pitchers }));
+									setPitchers(coerce(nBoard));
 									setSelId(nBoard.pitchers[0]?.id ?? null);
 									window.history.replaceState(null, '', `/?board=${encodeURIComponent(nBoard.id)}`);
 								}}

@@ -77,28 +77,13 @@ export const SURFACE_CLASSES = {
 	'destructive-saturated': 'border-transparent bg-rose-800 text-white',
 } satisfies Record<SurfaceVariant, string>;
 
-const ACTION_SIZES: Record<UiSize, string> = {
-	xs: 'h-7 gap-1 px-2 text-xs',
-	sm: 'h-9 px-3 text-sm',
-	md: 'h-10 px-4 py-2 text-sm',
-	lg: 'h-11 px-5 py-2.5 text-sm',
-	xl: 'h-12 px-6 py-3 text-base',
-};
+const ACTION_SIZES: Record<UiSize, string> = { xs: 'h-7 gap-1 px-2 text-xs', sm: 'h-9 px-3 text-sm', md: 'h-10 px-4 py-2 text-sm', lg: 'h-11 px-5 py-2.5 text-sm', xl: 'h-12 px-6 py-3 text-base' };
 
-const CONTROL_SIZES: Record<UiSize, string> = {
-	xs: 'h-7 px-2 text-xs',
-	sm: 'h-9 px-3 text-sm',
-	md: 'h-10 px-3 text-sm',
-	lg: 'h-11 px-4 text-base',
-	xl: 'h-12 px-4 text-base',
-};
+const CONTROL_SIZES: Record<UiSize, string> = { xs: 'h-7 px-2 text-xs', sm: 'h-9 px-3 text-sm', md: 'h-10 px-3 text-sm', lg: 'h-11 px-4 text-base', xl: 'h-12 px-4 text-base' };
 
 export const BUTTON_VARIANTS = cva(
 	'inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-	{
-		variants: { variant: ACTION_CLASSES, size: ACTION_SIZES },
-		defaultVariants: { variant: 'primary', size: 'md' },
-	},
+	{ variants: { variant: ACTION_CLASSES, size: ACTION_SIZES }, defaultVariants: { variant: 'primary', size: 'md' } },
 );
 
 export const controlClasses = (variant: ControlVariant = 'primary', size: UiSize = 'md') =>
@@ -106,12 +91,7 @@ export const controlClasses = (variant: ControlVariant = 'primary', size: UiSize
 
 export const surfaceClasses = (variant: SurfaceVariant = 'gray') => ['rounded-md border', SURFACE_CLASSES[variant]].join(' ');
 
-export const inputAccentClasses: Record<UiColor, string> = {
-	primary: 'accent-cyan-700',
-	secondary: 'accent-yellow-600',
-	gray: 'accent-gray-600',
-	destructive: 'accent-rose-700',
-};
+export const inputAccentClasses: Record<UiColor, string> = { primary: 'accent-cyan-700', secondary: 'accent-yellow-600', gray: 'accent-gray-600', destructive: 'accent-rose-700' };
 
 export const colorForVariant = (variant: ActionVariant | ControlVariant | SurfaceVariant = 'primary'): UiColor => variant.split('-')[0] as UiColor;
 
